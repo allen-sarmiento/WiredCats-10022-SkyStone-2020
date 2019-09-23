@@ -1,0 +1,74 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import java.util.ArrayList;
+import java.util.List;
+
+@Autonomous(name="Gen3LinearOpMode",group="LinearOpMode")
+
+public class SkyStone10022LinearOpMode extends LinearOpMode{
+
+    // Andrew Miller \\
+    
+    //VUMARK IDENTIFICATION KEY BELOW
+    //AVmmZ7X/////AAABmRn70/2F9ESjtiswSJvtsv9NZMIn9BxyoZ31aKgIT4q+5A6Ye0GciG35scT2ALEy7w0r+g56kE7qvDP7XqFs/JGfL6IY8rD0kPo394OBONHizwqyYqdO9neDvbqFda0taR+U1KcxyI+MSu5jm7sunZE1A7YipFdX//rv5fK+TiRCmPMVfPbPJsetiTXllwL1sgEK4v63DdYOnUUYS7XLQJc2IJbk1uQn7pwG0nUVz3PwqVUsLJgM+s1/XfTKyLCZ77/Mz0ktMhUoustXAxLvWr9JmniFGxBzqHkI/yJoPlYcGJ18U3qWKZG2DCuOmHCG7Z6W4FJhTxW1kKiSpdgnYOt10ow+qnZRIv+skcUwADEX
+
+    VuforiaLocalizer vuforia;
+    
+    @Override public void runOpMode() {
+        
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId","id",
+        hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        
+        parameters.vuforiaLicenseKey = ("AVmmZ7X/////AAABmRn70/2F9ESjtiswSJvtsv9NZMIn9BxyoZ31aKgIT4q+5A6Ye0GciG35scT2ALEy7w0r+g56kE7qvDP7XqFs/JGfL6IY8rD0kPo394OBONHizwqyYqdO9neDvbqFda0taR+U1KcxyI+MSu5jm7sunZE1A7YipFdX//rv5fK+TiRCmPMVfPbPJsetiTXllwL1sgEK4v63DdYOnUUYS7XLQJc2IJbk1uQn7pwG0nUVz3PwqVUsLJgM+s1/XfTKyLCZ77/Mz0ktMhUoustXAxLvWr9JmniFGxBzqHkI/yJoPlYcGJ18U3qWKZG2DCuOmHCG7Z6W4FJhTxW1kKiSpdgnYOt10ow+qnZRIv+skcUwADEX");
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        
+        VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+        // from sample
+        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
+        stoneTarget.setName("Stone Target");
+        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
+        blueRearBridge.setName("Blue Rear Bridge");
+        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
+        redRearBridge.setName("Red Rear Bridge");
+        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
+        redFrontBridge.setName("Red Front Bridge");
+        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
+        blueFrontBridge.setName("Blue Front Bridge");
+        VuforiaTrackable red1 = targetsSkyStone.get(5);
+        red1.setName("Red Perimeter 1");
+        VuforiaTrackable red2 = targetsSkyStone.get(6);
+        red2.setName("Red Perimeter 2");
+        VuforiaTrackable front1 = targetsSkyStone.get(7);
+        front1.setName("Front Perimeter 1");
+        VuforiaTrackable front2 = targetsSkyStone.get(8);
+        front2.setName("Front Perimeter 2");
+        VuforiaTrackable blue1 = targetsSkyStone.get(9);
+        blue1.setName("Blue Perimeter 1");
+        VuforiaTrackable blue2 = targetsSkyStone.get(10);
+        blue2.setName("Blue Perimeter 2");
+        VuforiaTrackable rear1 = targetsSkyStone.get(11);
+        rear1.setName("Rear Perimeter 1");
+        VuforiaTrackable rear2 = targetsSkyStone.get(12);
+        rear2.setName("Rear Perimeter 2");
+
+        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables.addAll(targetsSkyStone);
+        targetsSkyStone.activate();
+        
+        // i think this is a good place to leave off for the day [9/9/9teen] //Andrew\\
+        while (opModeIsActive()){
+            
+            // get vision specifics to start autoplacement
+        }
+    }
+}
