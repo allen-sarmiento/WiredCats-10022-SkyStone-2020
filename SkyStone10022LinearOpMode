@@ -23,9 +23,9 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
-@Autonomous(name="SkyStoneAllenLinearOpMode", group ="Concept")
+@Autonomous(name="SkyStone10022LinearOpMode", group ="Concept")
 
-public class SkyStoneAllenLinearOpMode extends LinearOpMode {
+public class SkyStone10022LinearOpMode extends LinearOpMode {
 
     //Set Camera Source
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
@@ -90,7 +90,7 @@ public class SkyStoneAllenLinearOpMode extends LinearOpMode {
 
         waitForStart();
 
-        if (opModeIsActive()) {
+        while (opModeIsActive()) {
 
             for (VuforiaTrackable trackable : allTrackables) {
                 if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
