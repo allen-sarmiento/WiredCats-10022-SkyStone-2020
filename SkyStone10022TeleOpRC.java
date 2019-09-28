@@ -8,6 +8,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+/**
+ * Intake methods and objects have been commented out due to incomplete wiring
+ *
+ * Contains Robot-Centric Drive
+ */
+
 @TeleOp
 
 public class SkyStone10022TeleOpRC extends OpMode{
@@ -80,10 +86,10 @@ public class SkyStone10022TeleOpRC extends OpMode{
         float leftx = gamepad1.left_stick_x;
         float rightx = gamepad1.right_stick_x;
 
-        frontLeft.setPower((lefty + leftx + rightx));
-        backLeft.setPower((lefty - leftx + rightx));
-        frontRight.setPower((lefty - leftx - rightx));
-        backRight.setPower((lefty +leftx - rightx));
+        frontLeft.setPower(lefty + leftx + rightx);
+        backLeft.setPower(lefty - leftx + rightx);
+        frontRight.setPower(lefty - leftx - rightx);
+        backRight.setPower(lefty + leftx - rightx);
 
         //HOOK
 
@@ -170,49 +176,49 @@ public class SkyStone10022TeleOpRC extends OpMode{
         */
 
         //Claw Open/Close
-        //if (gamepad2.x == true && toggle3 == 0) {
+        if (gamepad2.x == true && toggle3 == 0) {
 
-        //toggle3 = 1;
-        //}
+            toggle3 = 1;
+        }
 
-        //else if (gamepad2.x == false && toggle3 == 1){
+        else if (gamepad2.x == false && toggle3 == 1){
 
-        //    clawIntake.setPosition(1);
-        //    toggle3 = 2;
-        //}
+            clawIntake.setPosition(1);
+            toggle3 = 2;
+        }
 
-        //else if (gamepad2.x == true && toggle3 == 2){
+        else if (gamepad2.x == true && toggle3 == 2){
 
-        //  toggle3 = 3;
-        //}
+            toggle3 = 3;
+        }
 
-        //    else if (gamepad2.x == false && toggle3 == 3){
+        else if (gamepad2.x == false && toggle3 == 3){
 
-        //       clawIntake.setPosition(0);
-        //     toggle3 = 0;
-        //}
+            clawIntake.setPosition(0);
+            toggle3 = 0;
+        }
 
         //Reset Claw
-        //if (gamepad2.b == true && toggle4 == 0){
+        if (gamepad2.b == true && toggle4 == 0){
 
-        //  toggle4 = 1;
-        //}
+            toggle4 = 1;
+        }
 
-        //else if (gamepad2.b == false && toggle4 == 1){
+        else if (gamepad2.b == false && toggle4 == 1){
 
-        //  clawIntake.setPosition(1);
-        //  toggle4 = 0;
-        //}
+            clawIntake.setPosition(1);
+            toggle4 = 0;
+        }
 
-        //Rotate Claw
-        //if (gamepad2.left_bumper == true){
+        Rotate Claw
+        if (gamepad2.left_bumper == true){
 
-        //  clawRotate.setPower(-1);
-        //}
+            clawRotate.setPower(-1);
+        }
 
-        //else if (gamepad2.right_bumper == true){
+        else if (gamepad2.right_bumper == true){
 
-        //  clawRotate.setPower(1);
-        //}
+            clawRotate.setPower(1);
+        }
     }
 }
