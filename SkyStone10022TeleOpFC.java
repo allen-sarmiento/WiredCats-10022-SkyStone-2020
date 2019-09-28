@@ -14,9 +14,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.lang.Math;
 
 /**
- * Intake methods and objects have been commented out due to incomplete wiring
+ * Experimental Field-Centric drive for TeleOp
  *
- * Contains experimental Field-Centric drive
+ * 9/28/19
+ * Field-Centric testing on 27/9 failed for 3 reasons:
+ * 1. The direction for motor powers were wrong
+ * 2. The orientation of the Rev Hub was wrong and hecne, measured the wrong angle
+ * 3. The Rev Hub measured angles differently from how we initially thought. We assumed that it
+ *    measured from 0 - 360, but it measures from 0 to 180 and then -180 to 0
  */
 
 @TeleOp
@@ -32,8 +37,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
     DcMotor spoolMotor, armMotor;
 
     //Intake
-    //Servo clawIntake;
-    //CRServo clawRotate;
+    Servo clawIntake;
+    CRServo clawRotate;
 
     //Hook
     Servo setHookL;
@@ -85,8 +90,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
         armMotor = hardwareMap.dcMotor.get("armMotor");
 
         //Intake
-        //clawIntake = hardwareMap.servo.get("clawIntake");
-        //clawRotate = hardwareMap.crservo.get("clawRotate");
+        clawIntake = hardwareMap.servo.get("clawIntake");
+        clawRotate = hardwareMap.crservo.get("clawRotate");
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
@@ -100,8 +105,9 @@ public class SkyStone10022TeleOpFC extends OpMode{
         //TELEMETRY
         telemetry.addData("Servo Current Position: ", setHookL.getPosition());
         telemetry.addData("Servo Current Position: ", setHookR.getPosition());
+
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addData("Heading: ", angles.firstAngle);
+        telemetry.addData("Pitch: ", angles.firstAngle);
         telemetry.update();
 
         //DRIVETRAIN
@@ -119,13 +125,15 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         if (0 < angles.firstAngle && angles.firstAngle <= 180) {
 
+            //Clockwise measurement
             FClefty = lefty * Math.cos(angles.firstAngle) + leftx * Math.sin(angles.firstAngle);
             FCleftx = -lefty * Math.sin(angles.firstAngle) + leftx * Math.cos(angles.firstAngle);
         }
 
         else {
 
-            antiClockWiseHeading = 360 - angles.firstAngle;
+            //Accounts for measuring -180 to 0, anticlockwise measurement
+            antiClockWiseHeading = -angles.firstAngle;
             FClefty = lefty * Math.cos(antiClockWiseHeading) - leftx * Math.sin(antiClockWiseHeading);
             FCleftx = lefty * Math.sin(antiClockWiseHeading) + leftx * Math.cos(antiClockWiseHeading);
         }
@@ -136,12 +144,6 @@ public class SkyStone10022TeleOpFC extends OpMode{
         backLeftPower = FClefty - FCleftx + FCrightx;
         frontRightPower = FClefty - FCleftx - FCrightx;
         backRightPower = FClefty + FCleftx - FCrightx;
-
-        //Check Joystick Values
-        frontLeftPower = checkJoystickValues(frontLeftPower);
-        backLeftPower = checkJoystickValues(backLeftPower);
-        frontRightPower = checkJoystickValues(frontRightPower);
-        backRightPower = checkJoystickValues(backRightPower);
 
         //Set Motor Powers
         frontLeft.setPower(frontLeftPower);
@@ -164,8 +166,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         else if (gamepad1.b == false && toggle1 == 1){
 
-            setHookL.setPosition(1);
-            setHookR.setPosition(1);
+            setHookL.setPosition(0);
+            setHookR.setPosition(0);
             toggle1 = 2;
         }
 
@@ -176,8 +178,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         else if (gamepad1.b == false && toggle1 == 3){
 
-            setHookL.setPosition(0);
-            setHookR.setPosition(0);
+            setHookL.setPosition(1);
+            setHookR.setPosition(1);
             toggle1 = 0;
         }
 
@@ -188,8 +190,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         else if (gamepad1.a == false && toggle2 == 1){
 
-            setHookL.setPosition(0);
-            setHookR.setPosition(0);
+            setHookL.setPosition(1);
+            setHookR.setPosition(1);
             toggle2 = 0;
         }
 
@@ -214,15 +216,25 @@ public class SkyStone10022TeleOpFC extends OpMode{
             armMotor.setPower(-1.0);
         }
 
+        else {
+
+            armMotor.setPower(0);
+        }
+
         //Extend/Retract Slides
         if (gamepad2.y == true){
 
-            spoolMotor.setPower(1.0);
+            spoolMotor.setPower(-1.0);
         }
 
         else if (gamepad2.a == true){
 
-            spoolMotor.setPower(-1.0);
+            spoolMotor.setPower(1.0);
+        }
+
+        else {
+
+            spoolMotor.setPower(0);
         }
 
         //INTAKE
@@ -232,7 +244,7 @@ public class SkyStone10022TeleOpFC extends OpMode{
             X (Toggle): Claw Open/Close
             B (Toggle): Reset Claw
         */
-        /*
+
         //Claw Open/Close
         if (gamepad2.x == true && toggle3 == 0) {
 
@@ -241,7 +253,7 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         else if (gamepad2.x == false && toggle3 == 1){
 
-            clawIntake.setPosition(1);
+            clawIntake.setPosition(180);
             toggle3 = 2;
         }
 
@@ -278,24 +290,10 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
             clawRotate.setPower(1);
         }
-        */
-    }
-
-    public double checkJoystickValues (double x) {
-
-        if (x > JOYSTICK_MAX) {
-
-            return x = 1;
-        }
-
-        else if (x < JOYSTICK_MIN) {
-
-            return x = -1;
-        }
 
         else {
 
-            return x = x;
+            clawRotate.setPower(0);
         }
     }
 }
