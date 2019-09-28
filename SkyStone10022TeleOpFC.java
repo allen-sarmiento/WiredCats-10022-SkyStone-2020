@@ -13,6 +13,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import java.lang.Math;
 
+/**
+ * Intake methods and objects have been commented out due to incomplete wiring
+ *
+ * Contains experimental Field-Centric drive
+ */
+
 @TeleOp
 
 public class SkyStone10022TeleOpFC extends OpMode{
@@ -44,8 +50,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
     final static double JOYSTICK_MIN = -1;
 
     double frontLeftPower;
-    double frontRightPower;
     double backLeftPower;
+    double frontRightPower;
     double backRightPower;
 
     double FClefty;
@@ -67,8 +73,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         //Drivetrain
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
-        frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
+        frontRight = hardwareMap.dcMotor.get("frontRight");
         backRight = hardwareMap.dcMotor.get("backRight");
 
         frontRight.setDirection(DcMotor.Direction.REVERSE);
@@ -127,20 +133,20 @@ public class SkyStone10022TeleOpFC extends OpMode{
         FCrightx = rightx;
 
         frontLeftPower = FClefty + FCleftx + FCrightx;
-        frontRightPower = FClefty - FCleftx + FCrightx;
-        backLeftPower = FClefty + FCleftx - FCrightx;
-        backRightPower = FClefty - FCleftx - FCrightx;
+        backLeftPower = FClefty - FCleftx + FCrightx;
+        frontRightPower = FClefty - FCleftx - FCrightx;
+        backRightPower = FClefty + FCleftx - FCrightx;
 
         //Check Joystick Values
         frontLeftPower = checkJoystickValues(frontLeftPower);
-        frontRightPower = checkJoystickValues(frontRightPower);
         backLeftPower = checkJoystickValues(backLeftPower);
+        frontRightPower = checkJoystickValues(frontRightPower);
         backRightPower = checkJoystickValues(backRightPower);
 
         //Set Motor Powers
         frontLeft.setPower(frontLeftPower);
-        frontRight.setPower(frontRightPower);
         backLeft.setPower(backLeftPower);
+        frontRight.setPower(frontRightPower);
         backRight.setPower(backRightPower);
 
         //HOOK
