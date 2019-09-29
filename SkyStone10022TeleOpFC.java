@@ -7,7 +7,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.hardware.CRServo;
-import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -50,9 +49,6 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
     //Variables
     int toggle1 = 0, toggle2 = 0, toggle3 = 0, toggle4 = 0;
-
-    final static double JOYSTICK_MAX = 1;
-    final static double JOYSTICK_MIN = -1;
 
     double frontLeftPower;
     double backLeftPower;
@@ -253,7 +249,7 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
         else if (gamepad2.x == false && toggle3 == 1){
 
-            clawIntake.setPosition(180);
+            clawIntake.setPosition(1);
             toggle3 = 2;
         }
 
