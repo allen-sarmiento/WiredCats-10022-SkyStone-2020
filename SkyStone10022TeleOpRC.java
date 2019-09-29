@@ -40,7 +40,7 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
     //IMU
     BNO055IMU imu;
-    Orientation angles;
+    Orientation rotation;
 
     @Override
     public void init(){
@@ -83,8 +83,8 @@ public class SkyStone10022TeleOpRC extends OpMode{
         telemetry.addData("Servo Current Position: ", setHookL.getPosition());
         telemetry.addData("Servo Current Position: ", setHookR.getPosition());
 
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addData("Pitch: ", angles.firstAngle);
+        rotation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Pitch: ", rotation.firstAngle);
         telemetry.update();
 
         //DRIVETRAIN
