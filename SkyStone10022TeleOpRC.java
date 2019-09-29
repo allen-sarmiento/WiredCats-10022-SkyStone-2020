@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.Set;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
@@ -9,9 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
- * Intake methods and objects have been commented out due to incomplete wiring
- *
- * Contains Robot-Centric Drive
+ * TeleOp Robot-Centric Drive
  */
 
 @TeleOp
@@ -27,8 +30,8 @@ public class SkyStone10022TeleOpRC extends OpMode{
     DcMotor spoolMotor, armMotor;
 
     //Intake
-    //Servo clawIntake;
-    //CRServo clawRotate;
+    Servo clawIntake;
+    CRServo clawRotate;
 
     //Hook
     Servo setHookL;
@@ -36,6 +39,10 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
     //Variables
     int toggle1 = 0, toggle2 = 0, toggle3 = 0, toggle4 = 0;
+
+    //IMU
+    BNO055IMU imu;
+    Orientation angles;
 
     @Override
     public void init(){
@@ -56,13 +63,19 @@ public class SkyStone10022TeleOpRC extends OpMode{
         armMotor = hardwareMap.dcMotor.get("armMotor");
 
         //Intake
-        //clawIntake = hardwareMap.servo.get("clawIntake");
-        //clawRotate = hardwareMap.crservo.get("clawRotate");
+        clawIntake = hardwareMap.servo.get("clawIntake");
+        clawRotate = hardwareMap.crservo.get("clawRotate");
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
         setHookR = hardwareMap.servo.get("setHookR");
         setHookR.setDirection(Servo.Direction.REVERSE);
+
+        //IMU
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imu = hardwareMap.get(BNO055IMU.class,"imu");
+        imu.initialize(parameters);
     }
 
     @Override
@@ -71,6 +84,9 @@ public class SkyStone10022TeleOpRC extends OpMode{
         //TELEMETRY
         telemetry.addData("Servo Current Position: ", setHookL.getPosition());
         telemetry.addData("Servo Current Position: ", setHookR.getPosition());
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Pitch: ", angles.firstAngle);
         telemetry.update();
 
         //DRIVETRAIN
@@ -106,8 +122,8 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
         else if (gamepad1.b == false && toggle1 == 1){
 
-            setHookL.setPosition(1);
-            setHookR.setPosition(1);
+            setHookL.setPosition(0);
+            setHookR.setPosition(0);
             toggle1 = 2;
         }
 
@@ -118,8 +134,8 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
         else if (gamepad1.b == false && toggle1 == 3){
 
-            setHookL.setPosition(0);
-            setHookR.setPosition(0);
+            setHookL.setPosition(1);
+            setHookR.setPosition(1);
             toggle1 = 0;
         }
 
@@ -130,8 +146,8 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
         else if (gamepad1.a == false && toggle2 == 1){
 
-            setHookL.setPosition(0);
-            setHookR.setPosition(0);
+            setHookL.setPosition(1);
+            setHookR.setPosition(1);
             toggle2 = 0;
         }
 
@@ -156,15 +172,25 @@ public class SkyStone10022TeleOpRC extends OpMode{
             armMotor.setPower(-1.0);
         }
 
+        else {
+
+            armMotor.setPower(0);
+        }
+
         //Extend/Retract Slides
         if (gamepad2.y == true){
 
-            spoolMotor.setPower(1.0);
+            spoolMotor.setPower(-1.0);
         }
 
         else if (gamepad2.a == true){
 
-            spoolMotor.setPower(-1.0);
+            spoolMotor.setPower(1.0);
+        }
+
+        else {
+
+            spoolMotor.setPower(0);
         }
 
         //INTAKE
@@ -183,7 +209,7 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
         else if (gamepad2.x == false && toggle3 == 1){
 
-            clawIntake.setPosition(1);
+            clawIntake.setPosition(180);
             toggle3 = 2;
         }
 
@@ -210,7 +236,7 @@ public class SkyStone10022TeleOpRC extends OpMode{
             toggle4 = 0;
         }
 
-        Rotate Claw
+        //Rotate Claw
         if (gamepad2.left_bumper == true){
 
             clawRotate.setPower(-1);
@@ -219,6 +245,11 @@ public class SkyStone10022TeleOpRC extends OpMode{
         else if (gamepad2.right_bumper == true){
 
             clawRotate.setPower(1);
+        }
+
+        else {
+
+            clawRotate.setPower(0);
         }
     }
 }
