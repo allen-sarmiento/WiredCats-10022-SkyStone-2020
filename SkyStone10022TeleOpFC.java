@@ -45,7 +45,7 @@ public class SkyStone10022TeleOpFC extends OpMode{
 
     //IMU
     BNO055IMU imu;
-    Orientation angles;
+    Orientation rotation;
 
     //Variables
     int toggle1 = 0, toggle2 = 0, toggle3 = 0, toggle4 = 0;
@@ -102,8 +102,8 @@ public class SkyStone10022TeleOpFC extends OpMode{
         telemetry.addData("Servo Current Position: ", setHookL.getPosition());
         telemetry.addData("Servo Current Position: ", setHookR.getPosition());
 
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addData("Pitch: ", angles.firstAngle);
+        rotation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Pitch: ", rotation.firstAngle);
         telemetry.update();
 
         //DRIVETRAIN
@@ -119,17 +119,17 @@ public class SkyStone10022TeleOpFC extends OpMode{
         double leftx = gamepad1.left_stick_x;
         double rightx = gamepad1.right_stick_x;
 
-        if (0 < angles.firstAngle && angles.firstAngle <= 180) {
+        if (0 < rotation.firstAngle && rotation.firstAngle <= 180) {
 
             //Clockwise measurement
-            FClefty = lefty * Math.cos(angles.firstAngle) + leftx * Math.sin(angles.firstAngle);
-            FCleftx = -lefty * Math.sin(angles.firstAngle) + leftx * Math.cos(angles.firstAngle);
+            FClefty = lefty * Math.cos(rotation.firstAngle) + leftx * Math.sin(rotation.firstAngle);
+            FCleftx = -lefty * Math.sin(rotation.firstAngle) + leftx * Math.cos(rotation.firstAngle);
         }
 
         else {
 
             //Accounts for measuring -180 to 0, anticlockwise measurement
-            antiClockWiseHeading = -angles.firstAngle;
+            antiClockWiseHeading = -rotation.firstAngle;
             FClefty = lefty * Math.cos(antiClockWiseHeading) - leftx * Math.sin(antiClockWiseHeading);
             FCleftx = lefty * Math.sin(antiClockWiseHeading) + leftx * Math.cos(antiClockWiseHeading);
         }
