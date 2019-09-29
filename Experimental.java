@@ -6,12 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import com.qualcomm.robotcore.hardware.CRServo;
-import org.firstinspires.ftc.robotcore.external.navigation.Rotation;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import java.lang.Math;
 
 /**
  * Aim:
@@ -27,7 +22,7 @@ import java.lang.Math;
  * 2. The IMU measure from 0 degrees to 180 degrees and then measures from -179 back to 0
  *
  * 3. Max inputs for motor power was at 2.57. Min inputs (when the joystick isn't moved) for motor
- *    power was -0.11. This is considered negligible as it is not enough to power the motor
+ * power was -0.11. This is considered negligible as it is not enough to power the motor
  */
 
 @TeleOp
@@ -59,24 +54,25 @@ public class Experimental extends OpMode{
         double rightx = gamepad1.right_stick_x;
 
         //Joystick Power Max Values
-        fLMax = lefty + leftx + rightx;
-        bLMax = lefty - leftx + rightx;
-        fRMax = lefty - leftx - rightx;
-        bRMax = lefty + leftx - rightx;
+        double fLMax = lefty + leftx + rightx;
+        double bLMax = lefty - leftx + rightx;
+        double fRMax = lefty - leftx - rightx;
+        double bRMax = lefty + leftx - rightx;
 
         // Joystick
         telemetry.addData("Left Stick Y: ", lefty);
         telemetry.addData("Left Stick X: ", leftx);
         telemetry.addData("Right Stick X: ", rightx);
 
-        telemetry.addData("");
+        telemetry.addData("----------------", null);
 
+        //Motor Powers
         telemetry.addData("fLMax: ", fLMax);
         telemetry.addData("bLMax: ", bLMax);
         telemetry.addData("fRMax: ", fRMax);
         telemetry.addData("bRMax: ", bRMax);
 
-        telemetry.addData("");
+        telemetry.addData("----------------", null);
 
         // IMU
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
