@@ -32,7 +32,11 @@ public class SkyStone10022LinearOpMode extends LinearOpMode {
 
     //Enter Vuforia License Key
     private static final String VUFORIA_KEY =
-            "ARp8YRD/////AAABmadb+sG5yUxWtDAqXq5hJLYTJp3VZAogb4+VtPsC+KDSUtDfYd0Qy7zx/WhxGm6GyX3+jfnYlhYEXAG76UsXHNepKKHmT2mUVMsbpCExpbT9pGdrPKZTd4WncGvjEkHdzB7FbH2scj8i1H7cMehgrhBxQgFqrIOZpheABIHqGyxAzyJ+TKxIaQJnQg2GTLnZ45W+vDaO3OwJ8rARp8YRD/////AAABmadb+sG5yUxWtDAqXq5hJLYTJp3VZAogb4+VtPsC+KDSUtDfYd0Qy7zx/WhxGm6GyX3+jfnYlhYEXAG76UsXHNepKKHmT2mUVMsbpCExpbT9pGdrPKZTd4WncGvjEkHdzB7FbH2scj8i1H7cMehgrhBxQgFqrIOZpheAeTkWFnrlCuARp8YRD/////AAABmadb+sG5yUxWtDAqXq5hJLYTJp3VZAogb4+VtPsC+KDSUtDfYd0Qy7zx/WhxGm6GyX3+jfnYlhYEXAG76UsXHNepKKHmT2mUVMsbpCExpbT9pGdrPKZTd4WncGvjEkHdzB7FbH2scj8i1H7cMehgrhBxQgFqrIOZpheAF7reOQnSN+RUM70bp7mV50VwWN56iwx2T5nsb8fw5H1rqYQhNe92qaE2TLttYAllikcXAFUPsC2G/6UdRIPmRh0Bxs4ozynBrVhTCjVgkHcQNAadtJooXnbqsnOqxMjxH+g8cfgu9H7fP8U6GMou";
+            "AUBZ9tz/////AAABmcD+zzeDb02lt3WkDlYB/vZi/6YK4SHRNFLfBrST0dK16ImQjN+KG3vN2MFs/EAcJyd" +
+                    "oBmOH0nbqY9lxbtNPKSpxOMtnrDwQmZWds+Z74kjqSmMCKDGT1a3LIIOF+6jbEWgITgiBRlY+gG" +
+                    "D/b8m6Ck3jCoe+CyVhXv1zyOKtcjlWLBHGhBSQ/xJbHGdkDsah2WkFJGUaaXRWLHqnYyit/FKJz" +
+                    "bQ5UjyFUraZZoTTXjgjfRvM7/YcwwDf+CXYCYObPKANY0g/y9YaArDYS2bgDL/5Fh9E3SUhAv8C" +
+                    "pNprIA2T8GCZhMDzFJYme87N1+1DspG7+2AsEyabBSKhst11vV6Z8tWRcHCfspKeEO/LtO/B";
 
     VuforiaLocalizer vuforia;
 
