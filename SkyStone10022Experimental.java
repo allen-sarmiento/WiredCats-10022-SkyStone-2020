@@ -27,11 +27,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 @TeleOp
 
-public class Experimental extends OpMode{
+public class SkyStone10022Experimental extends OpMode{
 
     //IMU
     BNO055IMU imu;
-    Orientation angles;
+    Orientation rotation;
 
     @Override
     public void init(){
@@ -75,10 +75,10 @@ public class Experimental extends OpMode{
         telemetry.addData("----------------", null);
 
         // IMU
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addData("Pitch: ", angles.firstAngle);
-        telemetry.addData("Yaw: ", angles.secondAngle);
-        telemetry.addData("Roll: ", angles.thirdAngle);
+        rotation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Pitch: ", rotation.firstAngle);
+        telemetry.addData("Yaw: ", rotation.secondAngle);
+        telemetry.addData("Roll: ", rotation.thirdAngle);
         telemetry.update();
     }
 }
