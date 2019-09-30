@@ -12,7 +12,31 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
- * TeleOp Robot-Centric Drive
+ * Robot-Centric Drive for TeleOp
+ *
+ * ------------------------------------------------------------------------------------------------
+ * CONTROL:
+ *
+ * GAMEPAD 1 -
+ *
+ * Left Joystick: Forwards Backwards, Strafing
+ * Right Joystick: Rotation
+ *
+ * A: Foundation Hook (Toggle)
+ *
+ * GAMEPAD 2 -
+ *
+ * A: Retract Linear Slides (Hold)
+ * Y: Extend Linear Slides (Hold)
+ * X: Activate Claw (Toggle)
+ *
+ * Dpad Up: Arm Up (Hold)
+ * Dpad Down: Arm Down (Hold)
+ *
+ * Left Bumper: Rotate Intake Anticlockwise
+ * Right Bumper: Rotate Intake Clockwise
+ *
+ * -------------------------------------------------------------------------------------------------
  */
 
 @TeleOp
@@ -45,7 +69,7 @@ public class SkyStone10022TeleOpRC extends OpMode{
     @Override
     public void init(){
 
-        //DEVICE MAPPING
+        //DEVICE INITIALIZATION
 
         //Drivetrain
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
@@ -80,8 +104,6 @@ public class SkyStone10022TeleOpRC extends OpMode{
     public void loop(){
 
         //TELEMETRY
-        telemetry.addData("Servo Current Position: ", setHookL.getPosition());
-        telemetry.addData("Servo Current Position: ", setHookR.getPosition());
 
         rotation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         telemetry.addData("Pitch: ", rotation.firstAngle);
@@ -110,43 +132,30 @@ public class SkyStone10022TeleOpRC extends OpMode{
         /*
             Gamepad 1:
             B (Toggle): Hook Down/Up
-            A (Toggle): Reset Hook Position
         */
 
-        if (gamepad1.b == true && toggle1 == 0) {
+        if (gamepad1.a == true && toggle1 == 0) {
 
             toggle1 = 1;
         }
 
-        else if (gamepad1.b == false && toggle1 == 1){
+        else if (gamepad1.a == false && toggle1 == 1){
 
             setHookL.setPosition(0);
             setHookR.setPosition(0);
             toggle1 = 2;
         }
 
-        else if (gamepad1.b == true && toggle1 == 2){
+        else if (gamepad1.a == true && toggle1 == 2){
 
             toggle1 = 3;
         }
 
-        else if (gamepad1.b == false && toggle1 == 3){
+        else if (gamepad1.a == false && toggle1 == 3) {
 
             setHookL.setPosition(1);
             setHookR.setPosition(1);
             toggle1 = 0;
-        }
-
-        if (gamepad1.a == true && toggle2 == 0){
-
-            toggle2 = 1;
-        }
-
-        else if (gamepad1.a == false && toggle2 == 1){
-
-            setHookL.setPosition(1);
-            setHookR.setPosition(1);
-            toggle2 = 0;
         }
 
         //ARM
@@ -220,18 +229,6 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
             clawIntake.setPosition(0);
             toggle3 = 0;
-        }
-
-        //Reset Claw
-        if (gamepad2.b == true && toggle4 == 0){
-
-            toggle4 = 1;
-        }
-
-        else if (gamepad2.b == false && toggle4 == 1){
-
-            clawIntake.setPosition(1);
-            toggle4 = 0;
         }
 
         //Rotate Claw
