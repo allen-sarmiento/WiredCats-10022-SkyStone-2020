@@ -13,14 +13,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.lang.Math;
 
 /**
- * Experimental Field-Centric drive for TeleOp
+ * SkyStone10022Experimental Field-Centric drive for TeleOp
  *
  * 9/28/19
- * Field-Centric testing on 27/9 failed for 3 reasons:
- * 1. The direction for motor powers were wrong
- * 2. The orientation of the Rev Hub was wrong and hecne, measured the wrong angle
- * 3. The Rev Hub measured angles differently from how we initially thought. We assumed that it
+ * - The direction for motor powers were wrong
+ * - The orientation of the Rev Hub was wrong and hecne, measured the wrong angle
+ * - The Rev Hub measured angles differently from how we initially thought. We assumed that it
  *    measured from 0 - 360, but it measures from 0 to 180 and then -180 to 0
+ *
+ * 9/30/19
+ * - Angles were not converted to radian
  */
 
 @TeleOp
@@ -119,17 +121,17 @@ public class SkyStone10022TeleOpFC extends OpMode{
         double leftx = gamepad1.left_stick_x;
         double rightx = gamepad1.right_stick_x;
 
-        if (0 < rotation.firstAngle && rotation.firstAngle <= 180) {
+        if (rotation.firstAngle >= 0) {
 
             //Clockwise measurement
-            FClefty = lefty * Math.cos(rotation.firstAngle) + leftx * Math.sin(rotation.firstAngle);
-            FCleftx = -lefty * Math.sin(rotation.firstAngle) + leftx * Math.cos(rotation.firstAngle);
+            FClefty = lefty * Math.cos(Math.toRadians(rotation.firstAngle)) + leftx * Math.sin(Math.toRadians(rotation.firstAngle));
+            FCleftx = -lefty * Math.sin(Math.toRadians(rotation.firstAngle)) + leftx * Math.cos(Math.toRadians(rotation.firstAngle));
         }
 
         else {
 
             //Accounts for measuring -180 to 0, anticlockwise measurement
-            antiClockWiseHeading = -rotation.firstAngle;
+            antiClockWiseHeading = -(Math.toRadians(rotation.firstAngle));
             FClefty = lefty * Math.cos(antiClockWiseHeading) - leftx * Math.sin(antiClockWiseHeading);
             FCleftx = lefty * Math.sin(antiClockWiseHeading) + leftx * Math.cos(antiClockWiseHeading);
         }
