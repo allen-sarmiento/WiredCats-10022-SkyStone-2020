@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.lang.Math;
 
 /**
- * SkyStone10022Experimental Field-Centric drive for TeleOp
+ * Field-Centric drive for TeleOp
  *
  * ------------------------------------------------------------------------------------------------
  * CONTROL:
@@ -42,7 +42,7 @@ import java.lang.Math;
  *
  * 9/28/19
  * - The direction for motor powers were wrong
- * - The orientation of the Rev Hub was wrong and hecne, measured the wrong angle
+ * - The orientation of the Rev Hub was wrong and hence, measured the wrong angle
  * - The Rev Hub measured angles differently from how we initially thought. We assumed that it
  *    measured from 0 - 360, but it measures from 0 to 180 and then -180 to 0
  *
