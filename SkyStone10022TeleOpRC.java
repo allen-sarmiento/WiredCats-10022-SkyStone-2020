@@ -60,7 +60,12 @@ public class SkyStone10022TeleOpRC extends OpMode{
     Servo setHookR;
 
     //Variables
-    int toggle1 = 0, toggle2 = 0, toggle3 = 0, toggle4 = 0;
+    int toggle1 = 0, toggle2 = 0, toggle3 = 0, toggle4 = 0, toggle5 = 0;
+
+    static final double     COUNTS_PER_MOTOR_REV    = 1680;
+    static final double     DRIVE_GEAR_REDUCTION    = 1;
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;
+    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
 
     //IMU
     BNO055IMU imu;
@@ -246,5 +251,18 @@ public class SkyStone10022TeleOpRC extends OpMode{
 
             clawRotate.setPower(0);
         }
+
+        //Run 10 inches forward
+        if (gamepad1.b == false && toggle5 == 0) {
+
+            toggle5 = 1;
+        }
+
+        else if (gamepad1.b == true && toggle5 == 1) {
+
+            toggle5 = 0;
+        }
+
+        public int armLevel
     }
 }
