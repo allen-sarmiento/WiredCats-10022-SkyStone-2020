@@ -87,6 +87,9 @@ public class SkyStone10022TeleOpFC extends OpMode{
     double FCleftx;
     double FCrightx;
 
+    double tempFClefty;
+    double tempFCleftx;
+
     double antiClockWiseHeading;
 
     @Override
@@ -145,11 +148,35 @@ public class SkyStone10022TeleOpFC extends OpMode{
         double leftx = gamepad1.left_stick_x;
         double rightx = gamepad1.right_stick_x;
 
-        if (rotation.firstAngle >= 0) {
+        FCrightx = rightx;
+
+        if (rotation.firstAngle <= 0) {
 
             //Clockwise measurement
             FClefty = lefty * Math.cos(Math.toRadians(rotation.firstAngle)) + leftx * Math.sin(Math.toRadians(rotation.firstAngle));
             FCleftx = -lefty * Math.sin(Math.toRadians(rotation.firstAngle)) + leftx * Math.cos(Math.toRadians(rotation.firstAngle));
+
+            /*
+            if (rotation.firstAngle >= -45) {
+
+                tempFClefty = FClefty;
+                tempFCleftx = FCleftx;
+
+                FCleftx = -tempFClefty;
+                FClefty = tempFCleftx;
+
+                frontLeftPower = (FClefty + FCleftx + FCrightx);
+                backLeftPower = (FClefty - FCleftx + FCrightx);
+                frontRightPower = (FClefty - FCleftx - FCrightx);
+                backRightPower = (FClefty + FCleftx - FCrightx);
+
+            }
+
+            if (rotation.firstAngle >= -180) {
+
+                tempFCleftx
+            }
+            */
         }
 
         else {
@@ -160,12 +187,10 @@ public class SkyStone10022TeleOpFC extends OpMode{
             FCleftx = lefty * Math.sin(antiClockWiseHeading) + leftx * Math.cos(antiClockWiseHeading);
         }
 
-        FCrightx = rightx;
-
-        frontLeftPower = FClefty + FCleftx + FCrightx;
-        backLeftPower = FClefty - FCleftx + FCrightx;
-        frontRightPower = FClefty - FCleftx - FCrightx;
-        backRightPower = FClefty + FCleftx - FCrightx;
+        frontLeftPower = (FClefty + FCleftx + FCrightx);
+        backLeftPower = (FClefty - FCleftx + FCrightx);
+        frontRightPower = (FClefty - FCleftx - FCrightx);
+        backRightPower = (FClefty + FCleftx - FCrightx);
 
         //Set Motor Powers
         frontLeft.setPower(frontLeftPower);
