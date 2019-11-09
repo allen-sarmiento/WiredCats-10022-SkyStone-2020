@@ -1,121 +1,351 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
-import java.util.ArrayList;
-import java.util.List;
+public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
+    //DECLARATION
 
-@Autonomous(name="SkyStone10022LinearOpMode", group ="Concept")
+    //Drivetrain
+    DcMotor frontLeft, frontRight, backLeft, backRight;
 
-public class SkyStone10022LinearOpMode extends LinearOpMode {
+    //Intake
+    Servo clampActivate;
+    Servo clampRotate;
 
-    //Set Camera Source
-    private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
+    //Hook
+    Servo setHookL;
+    Servo setHookR;
 
-    //Enter Vuforia License Key
-    private static final String VUFORIA_KEY =
-            "AUBZ9tz/////AAABmcD+zzeDb02lt3WkDlYB/vZi/6YK4SHRNFLfBrST0dK16ImQjN+KG3vN2MFs/EAcJyd" +
-                    "oBmOH0nbqY9lxbtNPKSpxOMtnrDwQmZWds+Z74kjqSmMCKDGT1a3LIIOF+6jbEWgITgiBRlY+gG" +
-                    "D/b8m6Ck3jCoe+CyVhXv1zyOKtcjlWLBHGhBSQ/xJbHGdkDsah2WkFJGUaaXRWLHqnYyit/FKJz" +
-                    "bQ5UjyFUraZZoTTXjgjfRvM7/YcwwDf+CXYCYObPKANY0g/y9YaArDYS2bgDL/5Fh9E3SUhAv8C" +
-                    "pNprIA2T8GCZhMDzFJYme87N1+1DspG7+2AsEyabBSKhst11vV6Z8tWRcHCfspKeEO/LtO/B";
+    //Variables
+    int toggle1 = 0, toggle2 = 0, toggle3 = 0;
 
-    VuforiaLocalizer vuforia;
+    static final double     COUNTS_PER_MOTOR_REV    = 1680;
+    static final double     DRIVE_GEAR_REDUCTION    = 1;
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;
+    static final double     COUNTS_PER_INCH         = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763))/2;
+    static final double     DRIVE_INCHES_PER_DEGREE = 22.0/90;
 
-    @Override public void runOpMode() {
+    //Arm Motor
+    static final double ARM_TICKS_REV = 28000;
+    static final double COUNTS_PER_DEGREE = (ARM_TICKS_REV) / (360);
 
-         //Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         // We can pass Vuforia the handle to a camera preview resource (on the RC phone)
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+    public void initialize() {
 
-        //Set Vuforia Key and Camera Source
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection   = CAMERA_CHOICE;
+        //DEVICE INITIALIZATION
 
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        //Drivetrain
+        frontLeft = hardwareMap.dcMotor.get("frontLeft");
+        frontRight = hardwareMap.dcMotor.get("frontRight");
+        backLeft = hardwareMap.dcMotor.get("backLeft");
+        backRight = hardwareMap.dcMotor.get("backRight");
 
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
-        stoneTarget.setName("Stone Target");
-        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
-        blueRearBridge.setName("Blue Rear Bridge");
-        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
-        redRearBridge.setName("Red Rear Bridge");
-        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
-        redFrontBridge.setName("Red Front Bridge");
-        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
-        blueFrontBridge.setName("Blue Front Bridge");
-        VuforiaTrackable red1 = targetsSkyStone.get(5);
-        red1.setName("Red Perimeter 1");
-        VuforiaTrackable red2 = targetsSkyStone.get(6);
-        red2.setName("Red Perimeter 2");
-        VuforiaTrackable front1 = targetsSkyStone.get(7);
-        front1.setName("Front Perimeter 1");
-        VuforiaTrackable front2 = targetsSkyStone.get(8);
-        front2.setName("Front Perimeter 2");
-        VuforiaTrackable blue1 = targetsSkyStone.get(9);
-        blue1.setName("Blue Perimeter 1");
-        VuforiaTrackable blue2 = targetsSkyStone.get(10);
-        blue2.setName("Blue Perimeter 2");
-        VuforiaTrackable rear1 = targetsSkyStone.get(11);
-        rear1.setName("Rear Perimeter 1");
-        VuforiaTrackable rear2 = targetsSkyStone.get(12);
-        rear2.setName("Rear Perimeter 2");
+        //Intake
+        clampActivate = hardwareMap.servo.get("clampActivate");
+        clampRotate = hardwareMap.servo.get("clampRotate");
 
-        // For convenience, gather together all the trackable objects in one easily-iterable collection
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsSkyStone);
+        //Hook
+        setHookL = hardwareMap.servo.get("setHookL");
+        setHookR = hardwareMap.servo.get("setHookR");
+        setHookR.setDirection(Servo.Direction.REVERSE);
+    }
 
-        // In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-        targetsSkyStone.activate();
+    public void forward (double power, double inches) {
 
-        waitForStart();
+        if (opModeIsActive()) {
 
-        while (opModeIsActive()) {
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
 
-                    // If Trackable Name is equal to Target Name i.e. If Target is detected
 
-                    if (trackable.getName().equals(stoneTarget.getName())) {
-                        telemetry.addData("Visible Target: ", stoneTarget.getName());
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                        //Execution
-
-                        // Break out of loop once code is executed
-                        sleep(1500);
-                        break;
-                    }
-                }
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
             }
 
-        }
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
 
-        // Disable Tracking when we are done;
-        targetsSkyStone.deactivate();
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void backward (double power, double inches) {
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void strafeLeft (double power, double inches) {
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void strafeRight (double power, double inches) {
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void rotateLeft (double power, double angle) {
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void rotateRight (double power, double angle) {
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                /*
+                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
+                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
+                telemetry.update();
+                 */
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void setHookDown() {
+
+        setHookL.setPosition(0.1);
+        setHookR.setPosition(0.1);
+    }
+
+    public void setHookUp() {
+
+        setHookL.setPosition(0.7);
+        setHookR.setPosition(0.7);
     }
 }
