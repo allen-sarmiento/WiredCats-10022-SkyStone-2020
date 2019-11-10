@@ -18,15 +18,21 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight;
 
     //Intake
-    Servo clampActivate;
-    Servo clampRotate;
+    Servo clampActivate;    // open or close
+    Servo clampRotate;      // rotate mechanism
 
     //Hook
     Servo setHookL;
     Servo setHookR;
 
+    //Linear Slides
+    // Y (Vertical)
+    DcMotor ySlide;
+    //X (Horizontal)
+    CRServo xSlide;
+
     //Variables
-    int toggle1 = 0, toggle2 = 0, toggle3 = 0;
+    int toggle1 = 0, toggle2 = 0, toggle3 = 0, yToggle = 0;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1680;
     static final double     DRIVE_GEAR_REDUCTION    = 1;
@@ -37,6 +43,11 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     //Arm Motor
     static final double ARM_TICKS_REV = 28000;
     static final double COUNTS_PER_DEGREE = (ARM_TICKS_REV) / (360);
+
+    //starting positions
+    double clampInitPosition;   // claw
+    double ySlidePosition;      // vertical slides
+
 
     public void initialize() {
 
@@ -54,11 +65,17 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         //Intake
         clampActivate = hardwareMap.servo.get("clampActivate");
         clampRotate = hardwareMap.servo.get("clampRotate");
+        clampInitPosition = clampRotate.getPosition();  //starting position
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
         setHookR = hardwareMap.servo.get("setHookR");
         setHookR.setDirection(Servo.Direction.REVERSE);
+
+        //slides
+        xSlide = hardwareMap.crservo.get("xSlide");     // x
+        ySlide = hardwareMap.dcMotor.get("ySlide");     // y
+        ySlidePosition = ySlide.getCurrentPosition();   // initial y position
     }
 
     public void forward (double power, double inches) {
