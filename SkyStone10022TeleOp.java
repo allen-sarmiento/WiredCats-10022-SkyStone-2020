@@ -118,7 +118,7 @@ public class SkyStone10022TeleOp extends SkyStone10022LinearOpMode {
             // end horizontal slides
 
 
-            // VERTICAL SLIDES -- manual mode
+            /* VERTICAL SLIDES -- manual mode -- backup
             if (gamepad1.dpad_up) {
                 ySlide.setPower(1.0);
             } else if (gamepad1.dpad_down) {
@@ -126,41 +126,47 @@ public class SkyStone10022TeleOp extends SkyStone10022LinearOpMode {
             } else {
                 ySlide.setPower(0.0);
             }
-            //end vertical slides
-            //VERTICAL SLIDES -- automatic mode -- WIP
-            // add yPosition: int that changes based on what height the slides are at
-            /* wip
+            end vertical slides */
+
+            // VERTICAL SLIDES -- automatic mode -- WIP
+
+            // dpad up (y slide up)
             if (gamepad1.dpad_up && yToggle == 0) {
-
+                ySlide.setTargetPosition(ySlidePosition + change1);    //change1 = change from 0 to 1
                 yToggle = 1;
-
             }
-            else if (!gamepad1.dpad_down && yToggle == 1) {
-
-                clampActivate.setPosition(0.77);
+            else if (gamepad1.dpad_up && yToggle == 1) {
+                ySlide.setTargetPosition(ySlidePosition + change);    //change = change from 1/2/3 to 2/3/4
                 yToggle = 2;
+            }
+            else if (gamepad1.dpad_up && yToggle == 2) {
+                ySlide.setTargetPosition(ySlidePosition + 2*change);
+                yToggle = 3;
+            }
+            else if (gamepad1.dpad_up && yToggle == 3) {
+                ySlide.setTargetPosition(ySlidePosition + 3*change);
+                yToggle = 4;
+            }
 
+            //dpad down (y slide down)
+            else if (gamepad1.dpad_down && yToggle == 4) {
+                ySlide.setTargetPosition(ySlidePosition + 2*change);
+                yToggle = 3;
+            }
+            else if (gamepad1.dpad_down && yToggle == 3) {
+                ySlide.setTargetPosition(ySlidePosition + change);
+                yToggle = 2;
             }
             else if (gamepad1.dpad_down && yToggle == 2) {
-
-                yToggle = 3;
-
+                ySlide.setTargetPosition(ySlidePosition + change1);
+                yToggle = 1;
             }
-            else if (!gamepad1.dpad_down && yToggle == 3) {
-
-                clampActivate.setPosition(1);
-                yToggle = 0;
-
-            }
-            */
-            /* yPosition == 0 // base level -- AKA level for picking blocks off the floor
+            else if (gamepad1.dpad_down && yToggle == 1) {
                 ySlide.setTargetPosition(ySlidePosition);
-            yPosition == 1 // position to place the first block on the foundation
-                ySlide.setTargetPosition(ySlidePosition + variable);    //variable = distance between base level & foundation level 1
-            //add to stack up to 4 (capstone counts as 1)
-            */
-
+                yToggle = 0;
+            }
             //end vertical slide code
+
         }
     }
 }
