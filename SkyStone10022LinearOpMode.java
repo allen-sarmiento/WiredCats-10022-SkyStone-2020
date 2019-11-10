@@ -46,7 +46,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     //starting positions
     double clampInitPosition;   // claw
-    double ySlidePosition;      // vertical slides
+    int ySlidePosition;      // vertical slides initial position
+
+    // y slide stuff
+    int change1, change;
 
 
     public void initialize() {
@@ -76,6 +79,9 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         xSlide = hardwareMap.crservo.get("xSlide");     // x
         ySlide = hardwareMap.dcMotor.get("ySlide");     // y
         ySlidePosition = ySlide.getCurrentPosition();   // initial y position
+
+        change1 = 100;          // CHANGE THIS
+        change = 150;           // THESE ARE RANDOM VALUES -- PLEASE TEST, FIND, AND ENTER REAL ONES
     }
 
     public void forward (double power, double inches) {
