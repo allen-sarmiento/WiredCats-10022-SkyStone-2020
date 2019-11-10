@@ -39,7 +39,7 @@ public class FieldCentricDrive extends OpMode {
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
         backRight = hardwareMap.dcMotor.get("backRight");
-
+        
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
@@ -109,9 +109,9 @@ public class FieldCentricDrive extends OpMode {
             brpower /= max;
         }
 
-        frontLeft.setPower(flpower);
-        frontRight.setPower(frpower);
-        backLeft.setPower(blpower);
+        frontLeft.setPower(-flpower);
+        frontRight.setPower(-frpower);
+        backLeft.setPower(-blpower);
         backRight.setPower(brpower);
 
         // Print Motor Power Direction
