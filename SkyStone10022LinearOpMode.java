@@ -1,55 +1,56 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     //DECLARATION
 
-    //Drivetrain
+    // DRIVETRAIN
     DcMotor frontLeft, frontRight, backLeft, backRight;
+    double flpower, frpower, blpower, brpower;
 
-    //Intake
-    Servo clampActivate;    // open or close
-    Servo clampRotate;      // rotate mechanism
+    double lefty = -gamepad1.left_stick_y;
+    double leftx = gamepad1.left_stick_x;
+    double rightx = gamepad1.right_stick_x;
 
-    //Hook
+    // CLAW
+    Servo clawActivate;
+    Servo clawRotate;
+
+    // INTAKE
+    DcMotor leftIntake, rightIntake;
+
+    // HOOK
     Servo setHookL;
     Servo setHookR;
 
-    //Linear Slides
-    // Y (Vertical)
-    DcMotor ySlide;
-    //X (Horizontal)
+    // LINEAR SLIDES
+    DcMotor ySlideOne, ySlideTwo;
     CRServo xSlide;
 
-    //Variables
-    int toggle1 = 0, toggle2 = 0, toggle3 = 0, yToggle = 0;
+    // VARIABLES
+    int bToggle = 0, yToggle = 0, xToggle = 0, backToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1680;
     static final double     DRIVE_GEAR_REDUCTION    = 1;
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;
     static final double     COUNTS_PER_INCH         = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763))/2;
     static final double     DRIVE_INCHES_PER_DEGREE = 22.0/90;
 
-    //Arm Motor
-    static final double ARM_TICKS_REV = 28000;
-    static final double COUNTS_PER_DEGREE = (ARM_TICKS_REV) / (360);
-
     //starting positions
-    double clampInitPosition;   // claw
-    int ySlidePosition;      // vertical slides initial position
+    double clampInitPosition;
+    double ySlideOnePos;
 
-    // y slide stuff
-    int change1, change;
+    // REV IMU
+    BNO055IMU imu;
+    Orientation theta;
+    double temp;
 
 
     public void initialize() {
@@ -65,10 +66,15 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        //Intake
-        clampActivate = hardwareMap.servo.get("clampActivate");
-        clampRotate = hardwareMap.servo.get("clampRotate");
-        clampInitPosition = clampRotate.getPosition();  //starting position
+        // Intake
+        leftIntake = hardwareMap.dcMotor.get("leftIntake");
+        rightIntake = hardwareMap.dcMotor.get("rightIntake");
+        rightIntake.setDirection(DcMotor.Direction.REVERSE);
+
+        // Claw
+        clawActivate = hardwareMap.servo.get("clawActivate");
+        clawRotate = hardwareMap.servo.get("clawRotate");
+        clampInitPosition = clawRotate.getPosition();  //starting position
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
@@ -76,12 +82,16 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         setHookR.setDirection(Servo.Direction.REVERSE);
 
         //slides
-        xSlide = hardwareMap.crservo.get("xSlide");     // x
-        ySlide = hardwareMap.dcMotor.get("ySlide");     // y
-        ySlidePosition = ySlide.getCurrentPosition();   // initial y position
+        xSlide = hardwareMap.crservo.get("xSlide");
+        ySlideOne = hardwareMap.dcMotor.get("ySlideOne");
+        ySlideTwo = hardwareMap.dcMotor.get("ySlideTwo");
+        ySlideTwo.setDirection(DcMotor.Direction.REVERSE);
+        ySlideOnePos = ySlideOne.getCurrentPosition();
 
-        change1 = 100;          // CHANGE THIS
-        change = 150;           // THESE ARE RANDOM VALUES -- PLEASE TEST, FIND, AND ENTER REAL ONES
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imu = hardwareMap.get(BNO055IMU.class,"imu");
+        imu.initialize(parameters);
     }
 
     public void forward (double power, double inches) {
@@ -105,11 +115,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -151,11 +157,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -197,11 +199,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -243,11 +241,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -289,11 +283,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -335,11 +325,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-                /*
-                telemetry.addData("Path1",  "Running to %7d :%7d", BL.getTargetPosition(), BR.getTargetPosition());
-                telemetry.addData("Path2",  "Running at %7d :%7d", BL.getCurrentPosition(), BR.getCurrentPosition());
-                telemetry.update();
-                 */
+
                 frontLeft.setPower(power);
                 backLeft.setPower(power);
                 frontRight.setPower(power);
@@ -370,5 +356,20 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
         setHookL.setPosition(0.7);
         setHookR.setPosition(0.7);
+    }
+
+    public String direction(double power) {
+
+        if (power > 0) {
+            return "Positive";
+        }
+
+        else if (power < 0) {
+            return "Negative";
+        }
+
+        else {
+            return "Zero";
+        }
     }
 }
