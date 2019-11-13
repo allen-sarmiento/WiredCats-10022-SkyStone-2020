@@ -16,10 +16,6 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight;
     double flpower, frpower, blpower, brpower;
 
-    double lefty = -gamepad1.left_stick_y;
-    double leftx = gamepad1.left_stick_x;
-    double rightx = gamepad1.right_stick_x;
-
     // CLAW
     Servo clawActivate;
     Servo clawRotate;
@@ -69,7 +65,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         // Intake
         leftIntake = hardwareMap.dcMotor.get("leftIntake");
         rightIntake = hardwareMap.dcMotor.get("rightIntake");
-        rightIntake.setDirection(DcMotor.Direction.REVERSE);
+        leftIntake.setDirection(DcMotor.Direction.REVERSE);
 
         // Claw
         clawActivate = hardwareMap.servo.get("clawActivate");
@@ -364,15 +360,15 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void ySlidesUp() {
 
-        ySlideOne.setPower(1.0);
-        ySlideTwo.setPower(1.0);
+        ySlideOne.setPower(0.6);
+        ySlideTwo.setPower(0.6);
 
     }
 
     public void ySlidesDown() {
 
-        ySlideOne.setPower(-1.0);
-        ySlideTwo.setPower(-1.0);
+        ySlideOne.setPower(-0.6);
+        ySlideTwo.setPower(-0.6);
 
     }
 
@@ -430,24 +426,24 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void rotateClawReset() {
 
-        clawRotate.setPosition(clampInitPosition);
+        clawRotate.setPosition(1);
 
     }
 
     public void rotateClaw() {
 
-        clawRotate.setPosition(clampInitPosition - 0.375);
+        clawRotate.setPosition(1 - 0.375);
 
     }
 
     // claw activate
 
     public void activateClaw() {
-        clawActivate.setPosition(0.77);
+        clawActivate.setPosition(0.6);
     }
 
     public void deactivateClaw() {
-        clawActivate.setPosition(1.0);
+        clawActivate.setPosition(0.8);
     }
 
     // direction
