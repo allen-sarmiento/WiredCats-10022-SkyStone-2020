@@ -346,6 +346,8 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
+    // hook methods
+
     public void setHookDown() {
 
         setHookL.setPosition(0.1);
@@ -357,6 +359,98 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         setHookL.setPosition(0.7);
         setHookR.setPosition(0.7);
     }
+
+    // y slides methods
+
+    public void ySlidesUp() {
+
+        ySlideOne.setPower(1.0);
+        ySlideTwo.setPower(1.0);
+
+    }
+
+    public void ySlidesDown() {
+
+        ySlideOne.setPower(-1.0);
+        ySlideTwo.setPower(-1.0);
+
+    }
+
+    public void ySlidesStop() {
+
+        ySlideOne.setPower(0.0);
+        ySlideTwo.setPower(0.0);
+
+    }
+
+    // intake/outtake/off methods
+
+    public void intake() {
+
+        leftIntake.setPower(1);
+        rightIntake.setPower(1);
+
+    }
+
+    public void outtake() {
+
+        leftIntake.setPower(-1);
+        rightIntake.setPower(-1);
+
+    }
+
+    public void intakeOff() {
+
+        leftIntake.setPower(0);
+        rightIntake.setPower(0);
+
+    }
+
+    // x slides
+
+    public void xSlideForward() {
+
+        xSlide.setPower(1.0);
+
+    }
+
+    public void xSlideBackward() {
+
+        xSlide.setPower(-1.0);
+
+    }
+
+    public void xSlideOff() {
+
+        xSlide.setPower(0.0);
+
+    }
+
+    // claw rotate
+
+    public void rotateClawReset() {
+
+        clawRotate.setPosition(clampInitPosition);
+
+    }
+
+    public void rotateClaw() {
+
+        clawRotate.setPosition(clampInitPosition - 0.375);
+
+    }
+
+    // claw activate
+
+    public void activateClaw() {
+        clawActivate.setPosition(0.77);
+    }
+
+    public void deactivateClaw() {
+        clawActivate.setPosition(1.0);
+    }
+
+    // direction
 
     public String direction(double power) {
 
