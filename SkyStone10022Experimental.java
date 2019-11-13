@@ -1,108 +1,250 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
-/**
- * LOG:
- *
- * 9/28/19
- * - When the joystick is pushed all the way up, y = 1.0, x = 0.0. As the joystick rotates
- * clockwise, y remains at 1.0 while x increases, up until a certain point where y begins to
- * decrease and x continues to increase to 1.0 and vice versa in the anticlockwise direction
- *
- * - The IMU measure from 0 degrees to 180 degrees and then measures from -179 back to 0
- *
- * - Max inputs for motor power was at 2.57. Min inputs (when the joystick isn't moved) for motor
- * power was -0.11. This is considered negligible as it is not enough to power the motor
- */
 
 @TeleOp
 
-public class SkyStone10022Experimental extends OpMode{
+/**
+ *      CONTROL SCHEME:
+ *
+ *      A: Automatic Win
+ *      B: Set Foundation Hook
+ *      X: Open/Close Claw
+ *      Y: Rotate Claw
+ *
+ *      Back: Switch Drive Mode from Field-Centric to Robot-Centric
+ *
+ *      Up: Raise Vertical Slides
+ *      Down: Lower Vertical SLides
+ *      Left: Retract Horizontal Slides
+ *      Right: Extend Horizontal Slides
+ *
+ *      Right Bumper: Intake Block
+ *      Left Bumper: Outtake Block
+ *
+ *      Left Joystick Y-Axis: Forward/Backward
+ *      Left Joystick X-Axis: Strafing
+ *      Right Joystick X-Axis: Rotation
+ *
+ *      Left Joystick Button: Half Robot Speed
+ *      Right Joystick Button: Half Robot Speed
+ */
 
-    //IMU
-    BNO055IMU imu;
-    Orientation rotation;
+public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
     @Override
-    public void init(){
+    public void runOpMode() throws InterruptedException {
 
-        //DEVICE Initialization
+        initialize();
 
-        //IMU
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu = hardwareMap.get(BNO055IMU.class,"imu");
-        imu.initialize(parameters);
-    }
+        while(!(isStarted()  || isStopRequested())) {
 
-    @Override
-    public void loop(){
+            idle();
 
-        // TELEMETRY
-        double lefty = -gamepad1.left_stick_y;
-        double leftx = gamepad1.left_stick_x;
-        double rightx = gamepad1.right_stick_x;
-
-        double FClefty;
-        double FCleftx;
-        double FCrightx;
-        double antiClockWiseHeading;
-
-        if (rotation.firstAngle >= 0) {
-
-            //Clockwise measurement
-            FClefty = lefty * Math.cos(Math.toRadians(rotation.firstAngle)) + leftx * Math.sin(Math.toRadians(rotation.firstAngle));
-            FCleftx = -lefty * Math.sin(Math.toRadians(rotation.firstAngle)) + leftx * Math.cos(Math.toRadians(rotation.firstAngle));
         }
 
-        else {
+        waitForStart();
 
-            //Accounts for measuring -180 to 0, anticlockwise measurement
-            antiClockWiseHeading = -(Math.toRadians(rotation.firstAngle));
-            FClefty = lefty * Math.cos(antiClockWiseHeading) - leftx * Math.sin(antiClockWiseHeading);
-            FCleftx = lefty * Math.sin(antiClockWiseHeading) + leftx * Math.cos(antiClockWiseHeading);
+        while (opModeIsActive()) {
+
+            // START ROBOT-CENTRIC DRIVETRAIN
+
+            float lefty = -gamepad1.left_stick_y;
+            float leftx = gamepad1.left_stick_x;
+            float rightx = gamepad1.right_stick_x;
+
+            // Joystick deadzones prevents unintentional drivetrain movements
+
+            if (lefty <= 0.2) {
+
+                lefty = 0;
+            }
+            if (leftx <= 0.2) {
+
+                leftx = 0;
+            }
+            if (rightx <= 0.2) {
+
+                rightx = 0;
+            }
+
+            // Motor powers are set to the power of 3 so that the drivetrain motors accelerates
+            // exponentially instead of linearly
+
+            flpower = Math.pow((lefty + leftx + rightx), 3);
+            blpower = Math.pow((lefty - leftx + rightx), 3);
+            frpower = Math.pow((lefty - leftx - rightx), 3);
+            brpower = Math.pow((lefty + leftx - rightx), 3);
+
+            // Motor Power is halved while either joystick button is held down to allow for
+            // more precise robot control
+
+            if (gamepad1.left_stick_button || gamepad1.right_stick_button) {
+
+                flpower /= 2;
+                frpower/= 2;
+                blpower /= 2;
+                brpower /= 2;
+            }
+
+            frontLeft.setPower(flpower);
+            backLeft.setPower(blpower);
+            frontRight.setPower(frpower);
+            backRight.setPower(brpower);
+
+            // END ROBOT-CENTRIC DRIVETRAIN
+
+            // START FOUNDATION HOOK
+
+            if (gamepad1.b && bToggle == 0) {
+
+                bToggle = 1;
+
+            } else if (!gamepad1.b && bToggle == 1) {
+
+                setHookDown();
+                bToggle = 2;
+
+            } else if (gamepad1.b && bToggle == 2) {
+
+                bToggle = 3;
+
+            } else if (!gamepad1.b && bToggle == 3) {
+
+                setHookUp();
+                bToggle = 0;
+            }
+
+            // END FOUNDATION HOOK
+
+            // START CLAW ACTIVATE
+
+            if (gamepad1.x && xToggle == 0) {
+
+                xToggle = 1;
+
+            } else if (!gamepad1.x && xToggle == 1) {
+
+                clawActivate.setPosition(0.77);
+                xToggle = 2;
+
+            } else if (gamepad1.x && xToggle == 2) {
+
+                xToggle = 3;
+
+            } else if (!gamepad1.x && xToggle == 3) {
+
+                clawActivate.setPosition(1);
+                xToggle = 0;
+            }
+
+            // END CLAW ACTIVATE
+
+            // START CLAW ROTATE
+
+            if (gamepad1.y && yToggle == 0) {
+
+                yToggle = 1;
+
+            } else if (!gamepad1.y && yToggle == 1) {
+
+                clawRotate.setPosition(clampInitPosition - 0.375);
+                yToggle = 2;
+
+            } else if (gamepad1.y && yToggle == 2) {
+
+                yToggle = 3;
+
+            } else if (!gamepad1.y && yToggle == 3) {
+
+                clawRotate.setPosition(clampInitPosition);
+                yToggle = 0;
+            }
+
+            // END CLAW ROTATE
+
+            // START VERTICAL SLIDES
+
+            if (gamepad1.dpad_up) {
+
+                ySlideOne.setPower(1.0);
+                ySlideTwo.setPower(1.0);
+
+            } else if (gamepad1.dpad_down) {
+
+                ySlideOne.setPower(-1.0);
+                ySlideTwo.setPower(-1.0);
+
+            } else {
+
+                ySlideOne.setPower(0.0);
+                ySlideTwo.setPower(0.0);
+            }
+
+            // END VERTICAL SLIDES
+
+            // START HORIZONTAL SLIDES
+
+            if (gamepad1.dpad_right) {
+
+                xSlide.setPower(1.0);
+
+            } else if (gamepad1.dpad_left) {
+
+                xSlide.setPower(-1.0);
+
+            } else {
+
+                xSlide.setPower(0.0);
+            }
+
+            // END HORIZONTAL SLIDES
+
+            // START INTAKE
+
+            if (gamepad1.right_bumper && rBumperToggle == 0) {
+
+                rBumperToggle = 1;
+
+            } else if (!gamepad1.right_bumper && rBumperToggle == 1) {
+
+                leftIntake.setPower(1);
+                rightIntake.setPower(1);
+                rBumperToggle = 2;
+
+            } else if (gamepad1.right_bumper && rBumperToggle == 2) {
+
+                rBumperToggle = 3;
+
+            } else if (!gamepad1.right_bumper && rBumperToggle == 3) {
+
+                leftIntake.setPower(0);
+                rightIntake.setPower(0);
+                rBumperToggle = 0;
+            }
+
+            if (gamepad1.left_bumper && lBumperToggle == 0) {
+
+                lBumperToggle = 1;
+
+            } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
+
+                leftIntake.setPower(-1);
+                rightIntake.setPower(-1);
+                lBumperToggle = 2;
+
+            } else if (gamepad1.left_bumper && lBumperToggle == 2) {
+
+                rBumperToggle = 3;
+
+            } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
+
+                leftIntake.setPower(0);
+                rightIntake.setPower(0);
+                lBumperToggle = 0;
+            }
+
+            // END INTAKE
         }
-
-        FCrightx = rightx;
-
-        // Net Motor Inputs
-        double frontLeftNet = FClefty + FCleftx + FCrightx;
-        double backLeftNet = FClefty - FCleftx + FCrightx;
-        double frontRightNet = FClefty - FCleftx - FCrightx;
-        double backRightNet = FClefty + FCleftx - FCrightx;
-
-        // Joystick
-        telemetry.addLine("------------------------------");
-        telemetry.addLine("RAW JOYSTICK INPUTS");
-        telemetry.addData("Left Stick Y: ", lefty);
-        telemetry.addData("Left Stick X: ", leftx);
-        telemetry.addData("Right Stick X: ", rightx);
-
-        telemetry.addLine("------------------------------");
-
-        //Motor Powers
-        telemetry.addLine("MOTOR INPUTS");
-        telemetry.addData("FL Input: ", frontLeftNet);
-        telemetry.addData("BL Input: ", backLeftNet);
-        telemetry.addData("FR Input: ", frontRightNet);
-        telemetry.addData("BR Input: ", backRightNet);
-
-        telemetry.addLine("------------------------------");
-
-        // Robot Orientation
-        telemetry.addLine("ROBOT ORIENTATION");
-        rotation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        telemetry.addData("Pitch: ", rotation.firstAngle);
-
-        telemetry.addLine("------------------------------");
-
-        telemetry.update();
     }
 }
