@@ -26,9 +26,6 @@ public class FieldCentricDrive extends OpMode {
     Orientation theta;
     double temp;
 
-    // Telemetry
-    boolean fl, fr, bl, br;
-
     @Override
     public void init(){
 
@@ -39,7 +36,7 @@ public class FieldCentricDrive extends OpMode {
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
         backRight = hardwareMap.dcMotor.get("backRight");
-        
+
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
