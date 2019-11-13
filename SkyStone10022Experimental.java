@@ -27,8 +27,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *      Right Joystick X-Axis: Rotation
  *
  *      Left Joystick Button: Half Robot Speed
- *      Right Joystick Button: Half Robot Speed
- */
+ *      Right Joystick Button: Half Robot Speed */
 
 public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
@@ -82,7 +81,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             if (gamepad1.left_stick_button || gamepad1.right_stick_button) {
 
                 flpower /= 2;
-                frpower/= 2;
+                frpower /= 2;
                 blpower /= 2;
                 brpower /= 2;
             }
@@ -95,37 +94,37 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             // END ROBOT-CENTRIC DRIVETRAIN
 
             // START FOUNDATION HOOK
+            {
+                if (gamepad1.b && bToggle == 0) {
 
-            if (gamepad1.b && bToggle == 0) {
+                    bToggle = 1;
 
-                bToggle = 1;
+                } else if (!gamepad1.b && bToggle == 1) {
 
-            } else if (!gamepad1.b && bToggle == 1) {
+                    setHookDown();
+                    bToggle = 2;
 
-                setHookDown();
-                bToggle = 2;
+                } else if (gamepad1.b && bToggle == 2) {
 
-            } else if (gamepad1.b && bToggle == 2) {
+                    bToggle = 3;
 
-                bToggle = 3;
+                } else if (!gamepad1.b && bToggle == 3) {
 
-            } else if (!gamepad1.b && bToggle == 3) {
-
-                setHookUp();
-                bToggle = 0;
+                    setHookUp();
+                    bToggle = 0;
+                }
             }
-
             // END FOUNDATION HOOK
 
             // START CLAW ACTIVATE
-
+            {
             if (gamepad1.x && xToggle == 0) {
 
                 xToggle = 1;
 
             } else if (!gamepad1.x && xToggle == 1) {
 
-                clawActivate.setPosition(0.77);
+                activateClaw();
                 xToggle = 2;
 
             } else if (gamepad1.x && xToggle == 2) {
@@ -134,117 +133,116 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             } else if (!gamepad1.x && xToggle == 3) {
 
-                clawActivate.setPosition(1);
+                deactivateClaw();
                 xToggle = 0;
             }
-
+        }
             // END CLAW ACTIVATE
 
             // START CLAW ROTATE
+            {
+                if (gamepad1.y && yToggle == 0) {
 
-            if (gamepad1.y && yToggle == 0) {
+                    yToggle = 1;
 
-                yToggle = 1;
+                } else if (!gamepad1.y && yToggle == 1) {
 
-            } else if (!gamepad1.y && yToggle == 1) {
+                    rotateClaw();
+                    yToggle = 2;
 
-                clawRotate.setPosition(clampInitPosition - 0.375);
-                yToggle = 2;
+                } else if (gamepad1.y && yToggle == 2) {
 
-            } else if (gamepad1.y && yToggle == 2) {
+                    yToggle = 3;
 
-                yToggle = 3;
+                } else if (!gamepad1.y && yToggle == 3) {
 
-            } else if (!gamepad1.y && yToggle == 3) {
-
-                clawRotate.setPosition(clampInitPosition);
-                yToggle = 0;
+                    rotateClawReset();
+                    yToggle = 0;
+                }
             }
-
             // END CLAW ROTATE
 
             // START VERTICAL SLIDES
+            {
+                if (gamepad1.dpad_up) {
 
-            if (gamepad1.dpad_up) {
+                    ySlidesUp();
 
-                ySlideOne.setPower(1.0);
-                ySlideTwo.setPower(1.0);
+                } else if (gamepad1.dpad_down) {
 
-            } else if (gamepad1.dpad_down) {
+                    ySlidesDown();
 
-                ySlideOne.setPower(-1.0);
-                ySlideTwo.setPower(-1.0);
+                } else {
 
-            } else {
+                    ySlidesStop();
 
-                ySlideOne.setPower(0.0);
-                ySlideTwo.setPower(0.0);
+                }
             }
-
             // END VERTICAL SLIDES
 
             // START HORIZONTAL SLIDES
+            {
+                if (gamepad1.dpad_right) {
 
-            if (gamepad1.dpad_right) {
+                    xSlideForward();
 
-                xSlide.setPower(1.0);
+                } else if (gamepad1.dpad_left) {
 
-            } else if (gamepad1.dpad_left) {
+                    xSlideBackward();
 
-                xSlide.setPower(-1.0);
+                } else {
 
-            } else {
-
-                xSlide.setPower(0.0);
+                    xSlideOff();
+                }
             }
-
             // END HORIZONTAL SLIDES
 
+
             // START INTAKE
+            // intake
+            {
+                if (gamepad1.right_bumper && rBumperToggle == 0) {
 
-            if (gamepad1.right_bumper && rBumperToggle == 0) {
+                    rBumperToggle = 1;
 
-                rBumperToggle = 1;
+                } else if (!gamepad1.right_bumper && rBumperToggle == 1) {
 
-            } else if (!gamepad1.right_bumper && rBumperToggle == 1) {
+                    intake();
+                    rBumperToggle = 2;
 
-                leftIntake.setPower(1);
-                rightIntake.setPower(1);
-                rBumperToggle = 2;
+                } else if (gamepad1.right_bumper && rBumperToggle == 2) {
 
-            } else if (gamepad1.right_bumper && rBumperToggle == 2) {
+                    rBumperToggle = 3;
 
-                rBumperToggle = 3;
+                } else if (!gamepad1.right_bumper && rBumperToggle == 3) {
 
-            } else if (!gamepad1.right_bumper && rBumperToggle == 3) {
-
-                leftIntake.setPower(0);
-                rightIntake.setPower(0);
-                rBumperToggle = 0;
+                    intakeOff();
+                    rBumperToggle = 0;
+                }
             }
+            //outtake
+            {
+                if (gamepad1.left_bumper && lBumperToggle == 0) {
 
-            if (gamepad1.left_bumper && lBumperToggle == 0) {
+                    lBumperToggle = 1;
 
-                lBumperToggle = 1;
+                } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
 
-            } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
+                    outtake();
+                    lBumperToggle = 2;
 
-                leftIntake.setPower(-1);
-                rightIntake.setPower(-1);
-                lBumperToggle = 2;
+                } else if (gamepad1.left_bumper && lBumperToggle == 2) {
 
-            } else if (gamepad1.left_bumper && lBumperToggle == 2) {
+                    rBumperToggle = 3;
 
-                rBumperToggle = 3;
+                } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
 
-            } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
-
-                leftIntake.setPower(0);
-                rightIntake.setPower(0);
-                lBumperToggle = 0;
+                    intakeOff();
+                    lBumperToggle = 0;
+                }
             }
-
             // END INTAKE
+
         }
     }
 }
