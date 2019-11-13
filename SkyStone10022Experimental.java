@@ -118,25 +118,25 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // START CLAW ACTIVATE
             {
-            if (gamepad1.x && xToggle == 0) {
+                if (gamepad1.x && xToggle == 0) {
 
-                xToggle = 1;
+                    xToggle = 1;
 
-            } else if (!gamepad1.x && xToggle == 1) {
+                } else if (!gamepad1.x && xToggle == 1) {
 
-                activateClaw();
-                xToggle = 2;
+                    activateClaw();
+                    xToggle = 2;
 
-            } else if (gamepad1.x && xToggle == 2) {
+                } else if (gamepad1.x && xToggle == 2) {
 
-                xToggle = 3;
+                    xToggle = 3;
 
-            } else if (!gamepad1.x && xToggle == 3) {
+                } else if (!gamepad1.x && xToggle == 3) {
 
-                deactivateClaw();
-                xToggle = 0;
+                    deactivateClaw();
+                    xToggle = 0;
+                }
             }
-        }
             // END CLAW ACTIVATE
 
             // START CLAW ROTATE
@@ -233,9 +233,9 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
                 } else if (gamepad1.left_bumper && lBumperToggle == 2) {
 
-                    rBumperToggle = 3;
+                    lBumperToggle = 3;
 
-                } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
+                } else if (!gamepad1.left_bumper && lBumperToggle == 3) {
 
                     intakeOff();
                     lBumperToggle = 0;
