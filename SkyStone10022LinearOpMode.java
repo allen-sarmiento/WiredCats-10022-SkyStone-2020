@@ -67,10 +67,9 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         rightIntake = hardwareMap.dcMotor.get("rightIntake");
         leftIntake.setDirection(DcMotor.Direction.REVERSE);
 
-        // Claw
+        // claw
         clawActivate = hardwareMap.servo.get("clawActivate");
         clawRotate = hardwareMap.servo.get("clawRotate");
-        clampInitPosition = clawRotate.getPosition();  //starting position
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
@@ -346,14 +345,14 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void setHookDown() {
 
-        setHookL.setPosition(0.1);
-        setHookR.setPosition(0.1);
+        setHookL.setPosition(0.9);
+        setHookR.setPosition(0.9);
     }
 
     public void setHookUp() {
 
-        setHookL.setPosition(0.7);
-        setHookR.setPosition(0.7);
+        setHookL.setPosition(0.375);
+        setHookR.setPosition(0.375);
     }
 
     // y slides methods
@@ -426,13 +425,13 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void rotateClawReset() {
 
-        clawRotate.setPosition(1);
+        clawRotate.setPosition(0.0);
 
     }
 
     public void rotateClaw() {
 
-        clawRotate.setPosition(1 - 0.375);
+        clawRotate.setPosition(0.32);
 
     }
 
