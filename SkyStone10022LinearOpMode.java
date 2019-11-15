@@ -1,464 +1,258 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+@TeleOp
 
-public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
+/**
+ *      CONTROL SCHEME:
+ *
+ *      A: Automatic Win
+ *      B: Set Foundation Hook
+ *      X: Open/Close Claw
+ *      Y: Rotate Claw
+ *
+ *      Back: Switch Drive Mode from Field-Centric to Robot-Centric
+ *
+ *      Up: Raise Vertical Slides
+ *      Down: Lower Vertical SLides
+ *      Left: Retract Horizontal Slides
+ *      Right: Extend Horizontal Slides
+ *
+ *      Right Bumper: Intake Block
+ *      Left Bumper: Outtake Block
+ *
+ *      Left Joystick Y-Axis: Forward/Backward
+ *      Left Joystick X-Axis: Strafing
+ *      Right Joystick X-Axis: Rotation
+ *
+ *      Left Joystick Button: Half Robot Speed
+ *      Right Joystick Button: Half Robot Speed */
 
-    //DECLARATION
+public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
-    // DRIVETRAIN
-    DcMotor frontLeft, frontRight, backLeft, backRight;
-    double flpower, frpower, blpower, brpower;
+    @Override
+    public void runOpMode() throws InterruptedException {
 
-    // CLAW
-    Servo clawActivate;
-    Servo clawRotate;
+        initialize();
 
-    // INTAKE
-    DcMotor leftIntake, rightIntake;
+        while(!(isStarted()  || isStopRequested())) {
 
-    // HOOK
-    Servo setHookL;
-    Servo setHookR;
+            idle();
 
-    // LINEAR SLIDES
-    DcMotor ySlideOne, ySlideTwo;
-    CRServo xSlide;
+        }
 
-    // VARIABLES
-    int bToggle = 0, yToggle = 0, xToggle = 0, backToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
+        waitForStart();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1680;
-    static final double     DRIVE_GEAR_REDUCTION    = 1;
-    static final double     COUNTS_PER_INCH         = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763))/2;
-    static final double     DRIVE_INCHES_PER_DEGREE = 22.0/90;
+        while (opModeIsActive()) {
 
-    //starting positions
-    double clampInitPosition;
-    double ySlideOnePos;
+            // START ROBOT-CENTRIC DRIVETRAIN
 
-    // REV IMU
-    BNO055IMU imu;
-    Orientation theta;
-    double temp;
+            float lefty = -gamepad1.left_stick_y;
+            float leftx = gamepad1.left_stick_x;
+            float rightx = gamepad1.right_stick_x;
 
+            // Joystick deadzones prevents unintentional drivetrain movements
 
-    public void initialize() {
+            if (lefty <= 0.2) {
 
-        //DEVICE INITIALIZATION
+                lefty = 0;
+            }
+            if (leftx <= 0.2) {
 
-        //Drivetrain
-        frontLeft = hardwareMap.dcMotor.get("frontLeft");
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        backLeft = hardwareMap.dcMotor.get("backLeft");
-        backRight = hardwareMap.dcMotor.get("backRight");
+                leftx = 0;
+            }
+            if (rightx <= 0.2) {
 
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
-
-        // Intake
-        leftIntake = hardwareMap.dcMotor.get("leftIntake");
-        rightIntake = hardwareMap.dcMotor.get("rightIntake");
-        leftIntake.setDirection(DcMotor.Direction.REVERSE);
-
-        // claw
-        clawActivate = hardwareMap.servo.get("clawActivate");
-        clawRotate = hardwareMap.servo.get("clawRotate");
-
-        //Hook
-        setHookL = hardwareMap.servo.get("setHookL");
-        setHookR = hardwareMap.servo.get("setHookR");
-        setHookR.setDirection(Servo.Direction.REVERSE);
-
-        //slides
-        xSlide = hardwareMap.crservo.get("xSlide");
-        ySlideOne = hardwareMap.dcMotor.get("ySlideOne");
-        ySlideTwo = hardwareMap.dcMotor.get("ySlideTwo");
-        ySlideTwo.setDirection(DcMotor.Direction.REVERSE);
-        ySlideOnePos = ySlideOne.getCurrentPosition();
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu = hardwareMap.get(BNO055IMU.class,"imu");
-        imu.initialize(parameters);
-    }
-
-    public void forward (double power, double inches) {
-
-        if (opModeIsActive()) {
-
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                rightx = 0;
             }
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            // Motor powers are set to the power of 3 so that the drivetrain motors accelerates
+            // exponentially instead of linearly
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+            flpower = Math.pow((lefty + leftx + rightx), 3);
+            blpower = Math.pow((lefty - leftx + rightx), 3);
+            frpower = Math.pow((lefty - leftx - rightx), 3);
+            brpower = Math.pow((lefty + leftx - rightx), 3);
 
-    public void backward (double power, double inches) {
+            // Motor Power is halved while either joystick button is held down to allow for
+            // more precise robot control
 
-        if (opModeIsActive()) {
+            if (gamepad1.left_stick_button || gamepad1.right_stick_button) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                flpower /= 2;
+                frpower /= 2;
+                blpower /= 2;
+                brpower /= 2;
             }
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            frontLeft.setPower(flpower);
+            backLeft.setPower(blpower);
+            frontRight.setPower(frpower);
+            backRight.setPower(brpower);
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+            // END ROBOT-CENTRIC DRIVETRAIN
 
-    public void strafeLeft (double power, double inches) {
+            // START FOUNDATION HOOK
+            {
+                if (gamepad1.b && bToggle == 0) {
 
-        if (opModeIsActive()) {
+                    bToggle = 1;
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                } else if (!gamepad1.b && bToggle == 1) {
 
-            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+                    setHookDown();
+                    bToggle = 2;
 
+                } else if (gamepad1.b && bToggle == 2) {
 
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    bToggle = 3;
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                } else if (!gamepad1.b && bToggle == 3) {
 
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                    setHookUp();
+                    bToggle = 0;
+                }
             }
+            // END FOUNDATION HOOK
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            // START CLAW ACTIVATE
+            {
+                if (gamepad1.x && xToggle == 0) {
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+                    xToggle = 1;
 
-    public void strafeRight (double power, double inches) {
+                } else if (!gamepad1.x && xToggle == 1) {
 
-        if (opModeIsActive()) {
+                    activateClaw();
+                    xToggle = 2;
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                } else if (gamepad1.x && xToggle == 2) {
 
-            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+                    xToggle = 3;
 
+                } else if (!gamepad1.x && xToggle == 3) {
 
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                    deactivateClaw();
+                    xToggle = 0;
+                }
             }
+            // END CLAW ACTIVATE
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            // START CLAW ROTATE
+            {
+                if (gamepad1.y && yToggle == 0) {
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+                    yToggle = 1;
 
-    public void rotateLeft (double power, double angle) {
+                } else if (!gamepad1.y && yToggle == 1) {
 
-        if (opModeIsActive()) {
+                    rotateClawOut();
+                    yToggle = 2;
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                } else if (gamepad1.y && yToggle == 2) {
 
-            frontLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+                    yToggle = 3;
 
+                } else if (!gamepad1.y && yToggle == 3) {
 
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rotateClawSide();
+                    yToggle = 4;
+                    
+                } else if (gamepad1.y && yToggle == 4) {
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+                    yToggle = 5;
 
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                } else if (!gamepad1.y && yToggle == 5) {
+
+                    rotateClawIn();
+                    yToggle = 0;
+                }
+                
             }
+            // END CLAW ROTATE
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            // START VERTICAL SLIDES
+            {
+                if (gamepad1.dpad_up) {
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+                    ySlidesUp();
 
-    public void rotateRight (double power, double angle) {
+                } else if (gamepad1.dpad_down) {
 
-        if (opModeIsActive()) {
+                    ySlidesDown();
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                } else {
 
-            frontLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+                    ySlidesStop();
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
+                }
             }
+            // END VERTICAL SLIDES
 
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
+            // START HORIZONTAL SLIDES
+            {
+                if (gamepad1.dpad_right) {
 
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
+                    xSlideForward();
 
-    // hook methods
+                } else if (gamepad1.dpad_left) {
 
-    public void setHookDown() {
+                    xSlideBackward();
 
-        setHookL.setPosition(0.9);
-        setHookR.setPosition(0.9);
-    }
+                } else {
 
-    public void setHookUp() {
+                    xSlideOff();
+                }
+            }
+            // END HORIZONTAL SLIDES
 
-        setHookL.setPosition(0.375);
-        setHookR.setPosition(0.375);
-    }
 
-    // y slides methods
+            // START INTAKE
+            // intake
+            {
+                if (gamepad1.right_bumper && rBumperToggle == 0) {
 
-    public void ySlidesUp() {
+                    rBumperToggle = 1;
 
-        ySlideOne.setPower(0.6);
-        ySlideTwo.setPower(0.6);
+                } else if (!gamepad1.right_bumper && rBumperToggle == 1) {
 
-    }
+                    intake();
+                    rBumperToggle = 2;
 
-    public void ySlidesDown() {
+                } else if (gamepad1.right_bumper && rBumperToggle == 2) {
 
-        ySlideOne.setPower(-0.6);
-        ySlideTwo.setPower(-0.6);
+                    rBumperToggle = 3;
 
-    }
+                } else if (!gamepad1.right_bumper && rBumperToggle == 3) {
 
-    public void ySlidesStop() {
+                    intakeOff();
+                    rBumperToggle = 0;
+                }
+            }
+            //outtake
+            {
+                if (gamepad1.left_bumper && lBumperToggle == 0) {
 
-        ySlideOne.setPower(0.0);
-        ySlideTwo.setPower(0.0);
+                    lBumperToggle = 1;
 
-    }
+                } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
 
-    // intake/outtake/off methods
+                    outtake();
+                    lBumperToggle = 2;
 
-    public void intake() {
+                } else if (gamepad1.left_bumper && lBumperToggle == 2) {
 
-        leftIntake.setPower(1);
-        rightIntake.setPower(1);
+                    rBumperToggle = 3;
 
-    }
+                } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
 
-    public void outtake() {
+                    intakeOff();
+                    lBumperToggle = 0;
+                }
+            }
+            // END INTAKE
 
-        leftIntake.setPower(-1);
-        rightIntake.setPower(-1);
-
-    }
-
-    public void intakeOff() {
-
-        leftIntake.setPower(0);
-        rightIntake.setPower(0);
-
-    }
-
-    // x slides
-
-    public void xSlideForward() {
-
-        xSlide.setPower(1.0);
-
-    }
-
-    public void xSlideBackward() {
-
-        xSlide.setPower(-1.0);
-
-    }
-
-    public void xSlideOff() {
-
-        xSlide.setPower(0.0);
-
-    }
-
-    // claw rotate
-
-    public void rotateClawReset() {
-
-        clawRotate.setPosition(0.0);
-
-    }
-
-    public void rotateClaw() {
-
-        clawRotate.setPosition(0.32);
-
-    }
-
-    // claw activate
-
-    public void activateClaw() {
-        clawActivate.setPosition(0.6);
-    }
-
-    public void deactivateClaw() {
-        clawActivate.setPosition(0.8);
-    }
-
-    // direction
-
-    public String direction(double power) {
-
-        if (power > 0) {
-            return "Positive";
-        }
-
-        else if (power < 0) {
-            return "Negative";
-        }
-
-        else {
-            return "Zero";
         }
     }
 }
