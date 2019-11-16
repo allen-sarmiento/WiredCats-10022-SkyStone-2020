@@ -27,8 +27,7 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
     String sequence = "";
 
     boolean isSkyStone;
-
-    int skyStonePos = 0;
+    int skyStonePos;
 
     @Override public void runOpMode() {
 
@@ -78,89 +77,225 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
 
         waitForStart();
 
-        // Run if in Blue Perimeter 1
-        if (sequence.equals("")) {
+        forward(0.3, 4);
+        
+        sleep(1000);
 
-            backward(.8, 24); // Move In front of left stone
+        // Scans all trackables
+        for (VuforiaTrackable trackable : allTrackables) {
 
-            sleep(1000);
+            // If any trackable is visible
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
 
-            // Scans all trackables
-            for (VuforiaTrackable trackable : allTrackables) {
+                if (trackable.getName().equals("Blue Perimeter 1")) {
 
-                // If any trackable is visible
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-
-                    if (trackable.getName().equals("Stone Target")) {
-
-                        telemetry.addLine("Stone Target is visible");
-
-                        skyStonePos = 1;
-
-                        isSkyStone = true;
-                    }
+                    telemetry.addLine("Blue Perimeter 1 is visible");
+                    sleep(1500);
+                    
+                    sequence = "Blue Perimeter 1";
                 }
-            }
 
-        }
+                else if (trackable.getName().equals("Blue Perimeter 2")) {
 
-        // Run if in Blue Perimeter 2
-        if (sequence.equals("BluePer2")) {
-
-            // Insert Execution
-
-            // Scans all trackables
-            for (VuforiaTrackable trackable : allTrackables) {
-
-                // If any trackable is visible
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-
-                    if (trackable.getName().equals("Stone Target")) {
-
-                        telemetry.addLine("Stone Target is visible");
-                    }
+                    telemetry.addLine("Blue Perimeter 2 is visible");
+                    sleep(1500);
+                    
+                    sequence = "Blue Perimeter 2";
                 }
-            }
-        }
 
-        // Run if in Red Perimeter 1
-        if(sequence.equals("RedPer1")) {
+                else if (trackable.getName().equals("Red Perimeter 1")) {
 
-            // Insert Execution
-
-            // Scans all trackables
-            for (VuforiaTrackable trackable : allTrackables) {
-
-                // If any trackable is visible
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-
-                    if (trackable.getName().equals("Stone Target")) {
-
-                        telemetry.addLine("Stone Target is visible");
-                    }
+                    telemetry.addLine("Red Perimeter 1 is visible");
+                    sleep(1000);
+                    
+                    sequence = "Red Perimeter 1";
                 }
+
+                else if (trackable.getName().equals("Red Perimeter 2")) {
+
+                    telemetry.addLine("Red Perimeter 2 is visible");
+                    sleep(1500);
+                    
+                    sequence = "Red Perimeter 2";
+                }
+
+                if (trackable.getName().equals("Stone Target")) {
+
+                    telemetry.addLine("SkyStone is visible");
+                    sleep(1500);
+                    
+                    isSkyStone = true;
+                }
+
+                else {
+
+                    isSkyStone = false;
+                }
+
+                telemetry.addLine("Nothing is visible");
+                telemetry.update();
             }
         }
 
-        // Run if in Red Perimeter 2
-        while (opModeIsActive()  && sequence.equals("RedPer2")) {
+        if (sequence.equals("Blue Perimeter 1")){
 
-            // Insert Execution
+            strafeLeft(0.2, 5);
+            
+            sleep(500);
+            
+            intake();
+            
+            forward(0.2, 5.5);
+            
+            rotateRight(0.2, 12.5);
+            
+            forward(0.2, 3.25);
+            
+            rotateLeft(0.2, 49);
+            
+            forward(0.4, 15);
+            
+            intakeOff();
+            
+            outtake();
+        }
 
-            // Scans all trackables
-            for (VuforiaTrackable trackable : allTrackables) {
+        if (sequence.equals("Blue Perimeter 2")){
 
-                // If any trackable is visible
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+            forward(0.2, 14); // move in front of build plate
 
-                    if (trackable.getName().equals("Stone Target")) {
+            // rotateRight(0,90); // face claw to build plate
 
-                        telemetry.addLine("Stone Target is visible");
-                    }
-                }
-            }
+            // backward(0,0); // center robot to build plate
+
+            // setHookDown();
+
+            // strafeRight(0,0); // drag foundation to build zone
+
+            // setHookUp();
+
+            // forward(0,0);
+        }
+
+        if (sequence.equals("Red Perimeter 1")) {
+
+            strafeRight(0.2, 5);
+            
+            sleep(750);
+            
+            intake();
+            
+            forward(0.2, 6.5);
+            
+            rotateRight(0.2, 23);
+        }
+
+        if (sequence.equals("Red Perimeter 2")) {
+
+            forward(0,0); // move in front of build plate
+
+            // rotateLeft(0,90); // face claw to build plate
+
+            // forward(0,0); // center robot to build plate
+
+            // setHookDown();
+
+            // strafeRight(0,0); // drag foundation to build zone
+
+            // setHookUp();
+
+            // backward(0,0);
         }
 
         telemetry.update();
+    }
+
+    public void findSkyStonePositionRed() {
+
+        if(isSkyStone) {
+
+            skyStonePos = 1;
+        }
+
+        else {
+            
+            sleep(1000);
+
+            strafeRight(0.2, 3.5);
+
+            sleep(1000);
+
+            if (isSkyStone) {
+
+                skyStonePos = 2;
+            }
+
+            else {
+
+                skyStonePos = 3;
+            }
+        }
+    }
+
+    public void deliverStones() {
+
+        if (skyStonePos == 1) {
+
+            rotateLeft(0, 90);
+
+            backward(0,0);
+
+            strafeLeft(0, 0);
+
+            intake();
+
+            forward(0,0);
+
+            strafeLeft(0,0);
+
+            backward(0,0);
+
+            rotateLeft(0, 90);
+
+            outtake();
+
+            sleep(750);
+
+            intakeOff();
+
+            rotateRight(0,90);
+
+            forward(0,90);
+
+            strafeLeft(0,0);
+
+            intake();
+
+            forward(0,0);
+
+            strafeRight(0,0);
+
+            backward(0,0);
+
+            rotateLeft(0,90);
+            
+            intakeOff();
+
+            outtake();
+
+            sleep(750);
+
+            strafeRight(0,0);
+        }
+
+        else if (skyStonePos == 2) {
+
+
+        }
+
+        else{
+
+
+        }
     }
 }
