@@ -44,9 +44,9 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     double ySlideOnePos;
 
     // REV IMU
-    BNO055IMU imu;
-    Orientation theta;
-    double temp;
+    // BNO055IMU imu;
+    // Orientation theta;
+    // double temp;
 
 
     public void initialize() {
@@ -83,10 +83,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         ySlideTwo.setDirection(DcMotor.Direction.REVERSE);
         ySlideOnePos = ySlideOne.getCurrentPosition();
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu = hardwareMap.get(BNO055IMU.class,"imu");
-        imu.initialize(parameters);
+        // BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        // parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        // imu = hardwareMap.get(BNO055IMU.class,"imu");
+        // imu.initialize(parameters);
     }
 
     public void forward (double power, double inches) {
@@ -437,7 +437,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void rotateClawIn() {
 
-        clawRotate.setPosition(0.5);
+        clawRotate.setPosition(0.7);
 
     }
 
