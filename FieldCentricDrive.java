@@ -26,6 +26,9 @@ public class FieldCentricDrive extends OpMode {
     Orientation theta;
     double temp;
 
+    // Telemetry
+    boolean fl, fr, bl, br;
+
     @Override
     public void init(){
 
@@ -51,7 +54,7 @@ public class FieldCentricDrive extends OpMode {
 
         // Print Robot Orientation
         theta = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
-        telemetry.addData("Rotation (Radian): ", theta.firstAngle);
+        telemetry.addData("Rotation (Radians): ", theta.firstAngle);
         telemetry.addData("Rotation (Degrees): ", Math.toDegrees(theta.firstAngle));
 
         double forward = -gamepad1.left_stick_y;
