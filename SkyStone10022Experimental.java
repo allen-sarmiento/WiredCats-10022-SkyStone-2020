@@ -12,22 +12,21 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *      X: Open/Close Claw
  *      Y: Rotate Claw
  *
- *      Back: Switch Drive Mode from Field-Centric to Robot-Centric
- *
  *      Up: Raise Vertical Slides
  *      Down: Lower Vertical SLides
  *      Left: Retract Horizontal Slides
  *      Right: Extend Horizontal Slides
  *
- *      Right Bumper: Intake Block
- *      Left Bumper: Outtake Block
+ *      Right Bumper: Intake Block *gamepad 1
+ *      Left Bumper: Outtake Block *gamepad 1
  *
+ *      *gamepad1
  *      Left Joystick Y-Axis: Forward/Backward
  *      Left Joystick X-Axis: Strafing
  *      Right Joystick X-Axis: Rotation
  *
- *      Left Joystick Button: Half Robot Speed
- *      Right Joystick Button: Half Robot Speed */
+ *      Left Joystick Button: Half Robot Speed *gamepad1
+ *      Right Joystick Button: Half Robot Speed *gamepad1 */
 
 public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
@@ -54,15 +53,15 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // Joystick deadzones prevents unintentional drivetrain movements
 
-            if (lefty <= 0.2) {
+            if (Math.abs(lefty) <= 0.2) {
 
                 lefty = 0;
             }
-            if (leftx <= 0.2) {
+            if (Math.abs(leftx) <= 0.2) {
 
                 leftx = 0;
             }
-            if (rightx <= 0.2) {
+            if (Math.abs(rightx) <= 0.2) {
 
                 rightx = 0;
             }
@@ -95,20 +94,20 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // START FOUNDATION HOOK
             {
-                if (gamepad1.b && bToggle == 0) {
+                if (gamepad2.b && bToggle == 0) {
 
                     bToggle = 1;
 
-                } else if (!gamepad1.b && bToggle == 1) {
+                } else if (!gamepad2.b && bToggle == 1) {
 
                     setHookDown();
                     bToggle = 2;
 
-                } else if (gamepad1.b && bToggle == 2) {
+                } else if (gamepad2.b && bToggle == 2) {
 
                     bToggle = 3;
 
-                } else if (!gamepad1.b && bToggle == 3) {
+                } else if (!gamepad2.b && bToggle == 3) {
 
                     setHookUp();
                     bToggle = 0;
@@ -118,20 +117,20 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // START CLAW ACTIVATE
             {
-                if (gamepad1.x && xToggle == 0) {
+                if (gamepad2.x && xToggle == 0) {
 
                     xToggle = 1;
 
-                } else if (!gamepad1.x && xToggle == 1) {
+                } else if (!gamepad2.x && xToggle == 1) {
 
                     activateClaw();
                     xToggle = 2;
 
-                } else if (gamepad1.x && xToggle == 2) {
+                } else if (gamepad2.x && xToggle == 2) {
 
                     xToggle = 3;
 
-                } else if (!gamepad1.x && xToggle == 3) {
+                } else if (!gamepad2.x && xToggle == 3) {
 
                     deactivateClaw();
                     xToggle = 0;
@@ -141,34 +140,44 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // START CLAW ROTATE
             {
-                if (gamepad1.y && yToggle == 0) {
+                if (gamepad2.y && yToggle == 0) {
 
                     yToggle = 1;
 
-                } else if (!gamepad1.y && yToggle == 1) {
+                } else if (!gamepad2.y && yToggle == 1) {
 
-                    rotateClaw();
+                    rotateClawOut();
                     yToggle = 2;
 
-                } else if (gamepad1.y && yToggle == 2) {
+                } else if (gamepad2.y && yToggle == 2) {
 
                     yToggle = 3;
 
-                } else if (!gamepad1.y && yToggle == 3) {
+                } else if (!gamepad2.y && yToggle == 3) {
 
-                    rotateClawReset();
+                    rotateClawSide();
+                    yToggle = 4;
+
+                } else if (gamepad2.y && yToggle == 4) {
+
+                    yToggle = 5;
+
+                } else if (!gamepad2.y && yToggle == 5) {
+
+                    rotateClawIn();
                     yToggle = 0;
                 }
+
             }
             // END CLAW ROTATE
 
             // START VERTICAL SLIDES
             {
-                if (gamepad1.dpad_up) {
+                if (gamepad2.dpad_up) {
 
                     ySlidesUp();
 
-                } else if (gamepad1.dpad_down) {
+                } else if (gamepad2.dpad_down) {
 
                     ySlidesDown();
 
@@ -182,11 +191,11 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
             // START HORIZONTAL SLIDES
             {
-                if (gamepad1.dpad_right) {
+                if (gamepad2.dpad_right) {
 
                     xSlideForward();
 
-                } else if (gamepad1.dpad_left) {
+                } else if (gamepad2.dpad_left) {
 
                     xSlideBackward();
 
@@ -233,9 +242,9 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
                 } else if (gamepad1.left_bumper && lBumperToggle == 2) {
 
-                    lBumperToggle = 3;
+                    rBumperToggle = 3;
 
-                } else if (!gamepad1.left_bumper && lBumperToggle == 3) {
+                } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
 
                     intakeOff();
                     lBumperToggle = 0;
