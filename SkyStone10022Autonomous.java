@@ -77,9 +77,7 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
 
         waitForStart();
 
-        forward(0.3, 4);
-        
-        sleep(1000);
+        forward(0,0);
 
         // Scans all trackables
         for (VuforiaTrackable trackable : allTrackables) {
@@ -90,40 +88,30 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
                 if (trackable.getName().equals("Blue Perimeter 1")) {
 
                     telemetry.addLine("Blue Perimeter 1 is visible");
-                    sleep(1500);
-                    
                     sequence = "Blue Perimeter 1";
                 }
 
-                else if (trackable.getName().equals("Blue Perimeter 2")) {
+                if (trackable.getName().equals("Blue Perimeter 2")) {
 
                     telemetry.addLine("Blue Perimeter 2 is visible");
-                    sleep(1500);
-                    
                     sequence = "Blue Perimeter 2";
                 }
 
-                else if (trackable.getName().equals("Red Perimeter 1")) {
+                if (trackable.getName().equals("Red Perimeter 1")) {
 
                     telemetry.addLine("Red Perimeter 1 is visible");
-                    sleep(1000);
-                    
                     sequence = "Red Perimeter 1";
                 }
 
-                else if (trackable.getName().equals("Red Perimeter 2")) {
+                if (trackable.getName().equals("Red Perimeter 2")) {
 
                     telemetry.addLine("Red Perimeter 2 is visible");
-                    sleep(1500);
-                    
                     sequence = "Red Perimeter 2";
                 }
 
                 if (trackable.getName().equals("Stone Target")) {
 
                     telemetry.addLine("SkyStone is visible");
-                    sleep(1500);
-                    
                     isSkyStone = true;
                 }
 
@@ -131,86 +119,65 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
 
                     isSkyStone = false;
                 }
-
-                telemetry.addLine("Nothing is visible");
-                telemetry.update();
             }
         }
 
         if (sequence.equals("Blue Perimeter 1")){
 
-            strafeLeft(0.2, 5);
-            
-            sleep(500);
-            
-            intake();
-            
-            forward(0.2, 5.5);
-            
-            rotateRight(0.2, 12.5);
-            
-            forward(0.2, 3.25);
-            
-            rotateLeft(0.2, 49);
-            
-            forward(0.4, 15);
-            
-            intakeOff();
-            
-            outtake();
+            strafeLeft(0, 0); // move to left-most quarry stone
+
+            rotateRight(0, 180); // face camera to quarry
+
+            sleep(250);
+
+            findSkyStonePositionBlue();
+
+            deliverStones();
         }
 
         if (sequence.equals("Blue Perimeter 2")){
 
-            forward(0.2, 14); // move in front of build plate
+            forward(0,0); // move in front of build plate
 
-            // rotateRight(0,90); // face claw to build plate
+            rotateRight(0,90); // face claw to build plate
 
-            // backward(0,0); // center robot to build plate
+            backward(0,0); // center robot to build plate
 
-            // setHookDown();
+            setHookDown();
 
-            // strafeRight(0,0); // drag foundation to build zone
+            strafeRight(0,0); // drag foundation to build zone
 
-            // setHookUp();
+            setHookUp();
 
-            // forward(0,0);
+            forward(0,0);
         }
 
         if (sequence.equals("Red Perimeter 1")) {
 
-            strafeRight(0.2, 5);
-            
-            sleep(750);
-            
-            intake();
-            
-            forward(0.2, 6.5);
-            
-            rotateRight(0.2, 23);
+
         }
 
         if (sequence.equals("Red Perimeter 2")) {
 
             forward(0,0); // move in front of build plate
 
-            // rotateLeft(0,90); // face claw to build plate
+            rotateLeft(0,90); // face claw to build plate
 
-            // forward(0,0); // center robot to build plate
+            forward(0,0); // center robot to build plate
 
-            // setHookDown();
+            setHookDown();
 
-            // strafeRight(0,0); // drag foundation to build zone
+            strafeRight(0,0); // drag foundation to build zone
 
-            // setHookUp();
+            setHookUp();
 
-            // backward(0,0);
+            backward(0,0);
         }
 
         telemetry.update();
     }
 
-    public void findSkyStonePositionRed() {
+    public void findSkyStonePositionBlue() {
 
         if(isSkyStone) {
 
@@ -218,10 +185,8 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
         }
 
         else {
-            
-            sleep(1000);
 
-            strafeRight(0.2, 3.5);
+            strafeLeft(0,0);
 
             sleep(1000);
 
@@ -278,12 +243,12 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
             backward(0,0);
 
             rotateLeft(0,90);
-            
-            intakeOff();
 
             outtake();
 
             sleep(750);
+
+            intakeOff();
 
             strafeRight(0,0);
         }
