@@ -126,6 +126,7 @@ public class QualOne10022TeleOp extends SkyStone10022LinearOpMode {
                 } else if (!gamepad1.x && xToggle == 1) {
 
                     activateClaw();
+                    intakeOff();
                     xToggle = 2;
 
                 } else if (gamepad1.x && xToggle == 2) {
@@ -227,31 +228,32 @@ public class QualOne10022TeleOp extends SkyStone10022LinearOpMode {
 
                 } else if (!gamepad1.right_bumper && rBumperToggle == 3) {
 
-                    intakeOff();
+                    //outtake
+                    {
+                        if (gamepad1.left_bumper && lBumperToggle == 0) {
+
+                            lBumperToggle = 1;
+
+                        } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
+
+                            outtake();
+                            lBumperToggle = 2;
+
+                        } else if (gamepad1.left_bumper && lBumperToggle == 2) {
+
+                            rBumperToggle = 3;
+
+                        } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
+
+                            intakeOff();
+                            lBumperToggle = 0;
+                        }
+                    }
+
                     rBumperToggle = 0;
                 }
             }
-            //outtake
-            {
-                if (gamepad1.left_bumper && lBumperToggle == 0) {
 
-                    lBumperToggle = 1;
-
-                } else if (!gamepad1.left_bumper && lBumperToggle == 1) {
-
-                    outtake();
-                    lBumperToggle = 2;
-
-                } else if (gamepad1.left_bumper && lBumperToggle == 2) {
-
-                    rBumperToggle = 3;
-
-                } else if (!gamepad1.right_bumper && lBumperToggle == 3) {
-
-                    intakeOff();
-                    lBumperToggle = 0;
-                }
-            }
             // END INTAKE
 
         }
