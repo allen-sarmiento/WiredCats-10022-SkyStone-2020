@@ -1,3 +1,6 @@
+
+// 11/23/2019 added diagonal method
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -32,7 +35,8 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     CRServo xSlide;
 
     // VARIABLES
-    int bToggle = 0, yToggle = 0, xToggle = 0, backToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
+    int aToggle = 0, bToggle = 0, yToggle = 0, xToggle = 0, backToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
+    double rTrigger = 0;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1680;
     static final double     DRIVE_GEAR_REDUCTION    = 1;
@@ -254,6 +258,68 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void diagonal (double power, double inches, int quadrant) {
+
+        // accepts quadrants:
+        // 2 1
+        // 3 4
+        // can update this to accept angles at a later time
+
+        if (opModeIsActive()) {
+
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            // goes a certain direction based on the quadrant integer
+            {
+                if (quadrant == 1) {
+                    frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+                    backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+                }
+                if (quadrant == 2) {
+                    backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+                    frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+                }
+                if (quadrant == 3) {
+                    frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+                    backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+                }
+                if (quadrant == 4) {
+                    backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+                    frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+                }
+            }
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+
+                frontLeft.setPower(power);
+                backLeft.setPower(power);
+                frontRight.setPower(power);
+                backRight.setPower(power);
+            }
+
+            // Stop all motion;
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         }
     }
 
