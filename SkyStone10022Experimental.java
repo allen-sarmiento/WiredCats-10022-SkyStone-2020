@@ -89,7 +89,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
                 else if (gamepad1.right_trigger > 0.1) {
 
-                    rTrigger = (int)((1 - gamepad1.right_trigger ) /2 + 0.5);
+                    rTrigger = (double)((1 - gamepad1.right_trigger ) /2 + 0.5);
 
                     flpower *= rTrigger;
                     frpower *= rTrigger;
