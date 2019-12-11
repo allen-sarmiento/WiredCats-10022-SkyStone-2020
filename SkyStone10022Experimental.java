@@ -80,7 +80,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 // Motor Power is halved while either joystick button is held down to allow for
                 // more precise robot control
 
-                if (gamepad1.right_trigger > 0.9) {
+                if (gamepad1.right_trigger > 0.9) {             // note: make it slow down even more dramatic
 
                     flpower /= 2;
                     frpower /= 2;
@@ -208,7 +208,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
             }
 
-            /* intake HOLD-- inactive */
+            /* intake alt, designs inactive */
             /** intakes by default
              *
              *  while left bumper is pressed = outtake
@@ -226,8 +226,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
              intake();
              }
              */
-
-            /* intake */ {
+            /* intake
                 if (gamepad1.right_bumper && rBumperToggle == 0) {
 
                     rBumperToggle = 1;
@@ -237,7 +236,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                     intake();
                     rBumperToggle = 2;
 
-                } else if (gamepad1.right_bumper && rBumperToggle == 2) {
+                } else if (gamepad1.right_bumper && rBumperToggle == 2) {           // fix
 
                     rBumperToggle = 3;
 
@@ -267,7 +266,40 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
                     rBumperToggle = 0;
                 }
+            } */
+
+            // WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP
+            /* intake */ {
+                if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
+
+                    rBumperToggle = 2;
+
+                } else if (!gamepad1.right_bumper && rBumperToggle == 2) {
+
+                    intake();
+                    rBumperToggle = 1;
+
+                } else if (gamepad1.right_bumper && rBumperToggle == 1) {
+
+                    intakeOff();
+                    rBumperToggle = 0;
+
+                } else if (!gamepad1.right_bumper && ) {
+
+
+
+                } else if (gamepad1.left_bumper && (rBumperToggle == 0 || rBumperToggle == 1)) {
+
+                    outtake();
+                    rBumperToggle = -1;
+
+                } else if (gamepad1.left_bumper && rBumperToggle == -1) {
+
+                    intakeOff();
+                    rBumperToggle = 0;
+                }
             }
+            //
 
         }
     }
