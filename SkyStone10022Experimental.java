@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *      Down: Lower Vertical Slides
  *      Left: Retract Horizontal Slides
  *      Right: Extend Horizontal Slides
- * 
+ *
  */
 
 public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
@@ -268,38 +268,38 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
             } */
 
-            // WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP
-            /* intake */ {
-                if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
+             /* intake */ {
+                    //intake
+                 if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
 
-                    rBumperToggle = 2;
-
-                } else if (!gamepad1.right_bumper && rBumperToggle == 2) {
+                    rBumperToggle = 10;
+                
+                } else if (!gamepad1.right_bumper && rBumperToggle == 10) {
 
                     intake();
                     rBumperToggle = 1;
 
-                } else if (gamepad1.right_bumper && rBumperToggle == 1) {
-
-                    intakeOff();
-                    rBumperToggle = 0;
-
-                } else if (!gamepad1.right_bumper && ) {
-
-
-
+                    //outtake
                 } else if (gamepad1.left_bumper && (rBumperToggle == 0 || rBumperToggle == 1)) {
 
+                    rBumperToggle = -10;
+
+                } else if (!gamepad1.left_bumper && rBumperToggle == -10) {
+                    
                     outtake();
                     rBumperToggle = -1;
+                    
+                    //off
+                } else if ((gamepad1.right_bumper && rBumperToggle == 1) || (gamepad1.left_bumper && rBumperToggle == -1)) {
 
-                } else if (gamepad1.left_bumper && rBumperToggle == -1) {
+                    rBumperToggle = 50;                                     // 50 = wants to be off
 
+                } else if(!gamepad1.right_bumper && !gamepad1.left_bumper && rBumperToggle == 50) {
+                    
                     intakeOff();
                     rBumperToggle = 0;
                 }
             }
-            //
 
         }
     }
