@@ -273,7 +273,7 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                  if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
 
                     rBumperToggle = 10;
-                
+
                 } else if (!gamepad1.right_bumper && rBumperToggle == 10) {
 
                     intake();
@@ -285,17 +285,17 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                     rBumperToggle = -10;
 
                 } else if (!gamepad1.left_bumper && rBumperToggle == -10) {
-                    
+
                     outtake();
                     rBumperToggle = -1;
-                    
+
                     //off
                 } else if ((gamepad1.right_bumper && rBumperToggle == 1) || (gamepad1.left_bumper && rBumperToggle == -1)) {
 
                     rBumperToggle = 50;                                     // 50 = wants to be off
 
                 } else if(!gamepad1.right_bumper && !gamepad1.left_bumper && rBumperToggle == 50) {
-                    
+
                     intakeOff();
                     rBumperToggle = 0;
                 }
