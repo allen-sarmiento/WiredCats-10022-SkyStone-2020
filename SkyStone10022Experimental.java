@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *      Down: Lower Vertical Slides
  *      Left: Retract Horizontal Slides
  *      Right: Extend Horizontal Slides
- * WIP
+ * 
  */
 
 public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
