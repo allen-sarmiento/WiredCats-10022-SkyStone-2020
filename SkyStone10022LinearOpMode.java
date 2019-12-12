@@ -19,9 +19,8 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight;
     double flpower, frpower, blpower, brpower;
 
-    // CLAW
-    Servo clawActivate;
-    Servo clawRotate;
+    // clamp
+    Servo clamp;
 
     // INTAKE
     DcMotor leftIntake, rightIntake;
@@ -31,21 +30,17 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     Servo setHookR;
 
     // LINEAR SLIDES
-    DcMotor ySlideOne, ySlideTwo;
+    DcMotor ySlideL, ySlideR;
     CRServo xSlide;
 
     // VARIABLES
-    int aToggle = 0, bToggle = 0, yToggle = 0, xToggle = 0, backToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
+    int bToggle = 0, yToggle = 0, xToggle = 0, rBumperToggle = 0, lBumperToggle = 0;
     double rTrigger = 0;
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1680;
-    static final double     DRIVE_GEAR_REDUCTION    = 1;
-    static final double     COUNTS_PER_INCH         = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763))/2;
-    static final double     DRIVE_INCHES_PER_DEGREE = 22.0/90;
-
-    //starting positions
-    double clampInitPosition;
-    double ySlideOnePos;
+    static final double COUNTS_PER_MOTOR_REV = 1680;
+    static final double DRIVE_GEAR_REDUCTION = 1;
+    static final double COUNTS_PER_INCH = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763)) / 2;
+    static final double DRIVE_INCHES_PER_DEGREE = 22.0 / 90;
 
     // REV IMU
     // BNO055IMU imu;
@@ -71,9 +66,8 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         rightIntake = hardwareMap.dcMotor.get("rightIntake");
         leftIntake.setDirection(DcMotor.Direction.REVERSE);
 
-        // claw
-        clawActivate = hardwareMap.servo.get("clawActivate");
-        clawRotate = hardwareMap.servo.get("clawRotate");
+        // claw/grabber
+        clamp = hardwareMap.servo.get("clamp");
 
         //Hook
         setHookL = hardwareMap.servo.get("setHookL");
@@ -82,10 +76,9 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
         //slides
         xSlide = hardwareMap.crservo.get("xSlide");
-        ySlideOne = hardwareMap.dcMotor.get("ySlideOne");
-        ySlideTwo = hardwareMap.dcMotor.get("ySlideTwo");
-        ySlideTwo.setDirection(DcMotor.Direction.REVERSE);
-        ySlideOnePos = ySlideOne.getCurrentPosition();
+        ySlideL = hardwareMap.dcMotor.get("ySlideL");
+        ySlideR = hardwareMap.dcMotor.get("ySlideR");
+        ySlideR.setDirection(DcMotor.Direction.REVERSE);
 
         // BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         // parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -93,7 +86,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         // imu.initialize(parameters);
     }
 
-    public void forward (double power, double inches) {
+    public void forward(double power, double inches) {
 
         if (opModeIsActive()) {
 
@@ -102,10 +95,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -135,7 +128,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void backward (double power, double inches) {
+    public void backward(double power, double inches) {
 
         if (opModeIsActive()) {
 
@@ -144,10 +137,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -177,7 +170,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void strafeLeft (double power, double inches) {
+    public void strafeLeft(double power, double inches) {
 
         if (opModeIsActive()) {
 
@@ -186,10 +179,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
+            frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -219,7 +212,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void strafeRight (double power, double inches) {
+    public void strafeRight(double power, double inches) {
 
         if (opModeIsActive()) {
 
@@ -228,10 +221,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int)(-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int)(inches * COUNTS_PER_INCH));
+            frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -261,7 +254,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void diagonal (double power, double inches, int quadrant) {
+    public void diagonal(double power, double inches, int quadrant) {
 
         // accepts quadrants:
         // 2 1
@@ -323,7 +316,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void rotateLeft (double power, double angle) {
+    public void rotateLeft(double power, double angle) {
 
         if (opModeIsActive()) {
 
@@ -332,10 +325,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontLeft.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backLeft.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontRight.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backRight.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -365,7 +358,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         }
     }
 
-    public void rotateRight (double power, double angle) {
+    public void rotateRight(double power, double angle) {
 
         if (opModeIsActive()) {
 
@@ -374,10 +367,10 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
             frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            frontLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int)(angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int)(-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontLeft.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backLeft.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            frontRight.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            backRight.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
 
 
             frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -425,24 +418,25 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void ySlidesUp() {
 
-        ySlideOne.setPower(0.6);
-        ySlideTwo.setPower(0.6);
+        ySlideL.setPower(0.6);
+        ySlideR.setPower(0.6);
 
     }
 
     public void ySlidesDown() {
 
-        ySlideOne.setPower(-0.6);
-        ySlideTwo.setPower(-0.6);
+        ySlideL.setPower(-0.6);
+        ySlideR.setPower(-0.6);
 
     }
 
     public void ySlidesStop() {
 
-        ySlideOne.setPower(0.0);
-        ySlideTwo.setPower(0.0);
+        ySlideL.setPower(0.0);
+        ySlideR.setPower(0.0);
 
     }
+
 
     // intake/outtake/off methods
 
@@ -487,34 +481,19 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     }
 
-    // claw rotate
 
-    public void rotateClawOut() {
+    // clamp activate
 
-        clawRotate.setPosition(0.0);
+    public void activateClamp() {
 
-    }
-
-    public void rotateClawSide() {
-
-        clawRotate.setPosition(0.32);
+        clamp.setPosition(0.6);
 
     }
 
-    public void rotateClawIn() {
+    public void deactivateClamp() {
 
-        clawRotate.setPosition(0.7);
+        clamp.setPosition(0.8);
 
-    }
-
-    // claw activate
-
-    public void activateClaw() {
-        clawActivate.setPosition(0.6);
-    }
-
-    public void deactivateClaw() {
-        clawActivate.setPosition(0.8);
     }
 
     // direction
