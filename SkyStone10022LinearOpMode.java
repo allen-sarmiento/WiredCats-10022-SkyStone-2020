@@ -37,7 +37,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     static final double COUNTS_PER_MOTOR_REV = 1680;
     static final double DRIVE_GEAR_REDUCTION = 1;
     static final double COUNTS_PER_INCH = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763)) / 2;
-    static final double DRIVE_INCHES_PER_DEGREE = 22.0 / 90;
+    static final double DRIVE_INCHES_PER_DEGREE = 22.0 / 90; // Outdated
 
     // REV IMU
     // BNO055IMU imu;
