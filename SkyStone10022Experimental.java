@@ -82,14 +82,14 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
 
                 if (gamepad1.right_trigger > 0.9) {             // note: make it slow down even more dramatic
 
-                    flpower /= 2;
-                    frpower /= 2;
-                    blpower /= 2;
-                    brpower /= 2;
+                    flpower /= 5;
+                    frpower /= 5;
+                    blpower /= 5;
+                    brpower /= 5;
                 }
                 else if (gamepad1.right_trigger > 0.1) {
 
-                    rTrigger = (double)((1 - gamepad1.right_trigger ) /2 + 0.5);
+                    rTrigger = ((1 - gamepad1.right_trigger) /2 + 0.2);
 
                     flpower *= rTrigger;
                     frpower *= rTrigger;
@@ -124,59 +124,6 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
             }
 
-            /* CLAW ACTIVATE */ {
-                if (gamepad2.x && xToggle == 0) {
-
-                    xToggle = 1;
-
-                } else if (!gamepad2.x && xToggle == 1) {
-
-                    activateClaw();
-                    intakeOff();
-                    xToggle = 2;
-
-                } else if (gamepad2.x && xToggle == 2) {
-
-                    xToggle = 3;
-
-                } else if (!gamepad2.x && xToggle == 3) {
-
-                    deactivateClaw();
-                    xToggle = 0;
-                }
-            }
-
-            /* CLAW ROTATE */ {
-                if (gamepad2.y && yToggle == 0) {
-
-                    yToggle = 1;
-
-                } else if (!gamepad2.y && yToggle == 1) {
-
-                    rotateClawOut();
-                    yToggle = 2;
-
-                } else if (gamepad2.y && yToggle == 2) {
-
-                    yToggle = 3;
-
-                } else if (!gamepad2.y && yToggle == 3) {
-
-                    rotateClawSide();
-                    yToggle = 4;
-
-                } else if (gamepad2.y && yToggle == 4) {
-
-                    yToggle = 5;
-
-                } else if (!gamepad2.y && yToggle == 5) {
-
-                    rotateClawIn();
-                    yToggle = 0;
-                }
-
-            }
-
             /* vertical slides */ {
                 if (gamepad2.dpad_up) {
 
@@ -207,6 +154,65 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                     xSlideOff();
                 }
             }
+
+            /* intake */ {
+                    //intake
+                 if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
+
+                    rBumperToggle = 10;
+
+                } else if (!gamepad1.right_bumper && rBumperToggle == 10) {
+
+                    intake();
+                    rBumperToggle = 1;
+
+                    //outtake
+                } else if (gamepad1.left_bumper && (rBumperToggle == 0 || rBumperToggle == 1)) {
+
+                    rBumperToggle = -10;
+
+                } else if (!gamepad1.left_bumper && rBumperToggle == -10) {
+
+                    outtake();
+                    rBumperToggle = -1;
+
+                    //off
+                } else if ((gamepad1.right_bumper && rBumperToggle == 1) || (gamepad1.left_bumper && rBumperToggle == -1)) {
+
+                    rBumperToggle = 50;                                     // 50 = wants to be off
+
+                } else if(!gamepad1.right_bumper && !gamepad1.left_bumper && rBumperToggle == 50) {
+
+                    intakeOff();
+                    rBumperToggle = 0;
+                }
+            }
+
+            /* grabber */ {
+                if (gamepad2.x && xToggle == 0) {
+
+                    xToggle = 1;
+
+                } else if (!gamepad2.x && xToggle == 1) {
+
+                    activateClamp();
+                    intakeOff();
+                    xToggle = 2;
+
+                } else if (gamepad2.x && xToggle == 2) {
+
+                    xToggle = 3;
+
+                } else if (!gamepad2.x && xToggle == 3) {
+
+                    deactivateClamp();
+                    xToggle = 0;
+                }
+                telemetry.addLine("Grabber position = " +clamp.getPosition());
+            }
+
+
+            // outdated code below this point (all commented out)
 
             /* intake alt, designs inactive */
             /** intakes by default
@@ -268,39 +274,58 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
             } */
 
-             /* intake */ {
-                    //intake
-                 if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
+            /* CLAW ACTIVATE */ /* {
+                if (gamepad2.x && xToggle == 0) {
 
-                    rBumperToggle = 10;
+                    xToggle = 1;
 
-                } else if (!gamepad1.right_bumper && rBumperToggle == 10) {
+                } else if (!gamepad2.x && xToggle == 1) {
 
-                    intake();
-                    rBumperToggle = 1;
-
-                    //outtake
-                } else if (gamepad1.left_bumper && (rBumperToggle == 0 || rBumperToggle == 1)) {
-
-                    rBumperToggle = -10;
-
-                } else if (!gamepad1.left_bumper && rBumperToggle == -10) {
-
-                    outtake();
-                    rBumperToggle = -1;
-
-                    //off
-                } else if ((gamepad1.right_bumper && rBumperToggle == 1) || (gamepad1.left_bumper && rBumperToggle == -1)) {
-
-                    rBumperToggle = 50;                                     // 50 = wants to be off
-
-                } else if(!gamepad1.right_bumper && !gamepad1.left_bumper && rBumperToggle == 50) {
-
+                    activateClaw();
                     intakeOff();
-                    rBumperToggle = 0;
-                }
-            }
+                    xToggle = 2;
 
+                } else if (gamepad2.x && xToggle == 2) {
+
+                    xToggle = 3;
+
+                } else if (!gamepad2.x && xToggle == 3) {
+
+                    deactivateClaw();
+                    xToggle = 0;
+                }
+            } */
+
+            /* CLAW ROTATE */ /*{
+                if (gamepad2.y && yToggle == 0) {
+
+                    yToggle = 1;
+
+                } else if (!gamepad2.y && yToggle == 1) {
+
+                    rotateClawOut();
+                    yToggle = 2;
+
+                } else if (gamepad2.y && yToggle == 2) {
+
+                    yToggle = 3;
+
+                } else if (!gamepad2.y && yToggle == 3) {
+
+                    rotateClawSide();
+                    yToggle = 4;
+
+                } else if (gamepad2.y && yToggle == 4) {
+
+                    yToggle = 5;
+
+                } else if (!gamepad2.y && yToggle == 5) {
+
+                    rotateClawIn();
+                    yToggle = 0;
+                }
+
+            } */
         }
     }
 }
