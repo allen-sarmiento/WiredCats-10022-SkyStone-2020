@@ -12,11 +12,7 @@ public class BlueLoadAuto extends SkyStone10022LinearOpMode {
 
         waitForStart();
 
-        strafeLeft(0.2, 3);
-
-        sleep(1000);
-
-        forward(0.2, 12);
+        strafeLeft(0.2, 10);
 
         sleep(30000);
 
