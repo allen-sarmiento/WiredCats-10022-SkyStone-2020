@@ -54,68 +54,60 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
 
         waitForStart();
 
-        // strafeLeft(0,0); // To foundation
+        backward(0.15, 7.1); // Move to first position stone
 
-        sleep(300);
-
-        // setHookDown(); // Grab foundation
-
-        sleep(300);
-
-        // strafeRight(0,0); // Drag foundation to depot
-
-        sleep(300);
-
-        // setHookUp();
-
-        sleep(300);
-
-        // forward(0,0); // Align to first stone
-
-        sleep(300);
-
-        // rotateRight(0,0); // Face camera to quarry
-
-        sleep(300);
-
-        // forward(0,0); // Move to first stone
-
-        sleep(300);
+        telemetry.addLine("Done");
+        telemetry.update();
 
         // Find skystone position
         while (position == 0) {
 
-            if (((VuforiaTrackableDefaultListener)stoneTarget.getListener()).isVisible()) {
+            telemetry.addLine("Scanning 1");
+            telemetry.update();
+            sleep(2000);
 
-                position = 1;
+            if (((VuforiaTrackableDefaultListener)stoneTarget.getListener()).isVisible()) {
 
                 telemetry.addLine("Position 1");
                 telemetry.update();
+
+                position = 1;
             }
 
             else {
 
-                // strafeLeft(0,0); // Move to next stone
+                telemetry.addLine("Scanning 2");
+                telemetry.update();
+                sleep(2000);
+
+                strafeRight(0.15, 2.8); // Move to next stone
 
                 sleep(300);
 
                 if (((VuforiaTrackableDefaultListener)stoneTarget.getListener()).isVisible()) {
 
-                    position = 2;
-
                     telemetry.addLine("Position 2");
                     telemetry.update();
+
+                    position = 2;
                 }
 
                 else {
 
-                    position = 3;
+                    telemetry.addLine("Scanning 3");
+                    telemetry.update();
+                    sleep(2000);
 
                     telemetry.addLine("Position 3");
                     telemetry.update();
+
+                    position = 3;
                 }
             }
         }
+
+        telemetry.addLine("Finished Scan: " + position);
+        telemetry.update();
 
         if (position == 1) {
 
@@ -131,35 +123,84 @@ public class SkyStone10022Autonomous extends SkyStone10022LinearOpMode {
 
         else {
 
+            // strafeLeft(0,0);
+
+            sleep(300);
+
             deliveryDistance = 0;
             returnDistance = 0;
         }
 
-        if (position == 1 || position == 2) {
+        // rotateRight(0,0); // Face intake to skystone
 
-            // rotateRight(0,0); // Face intake to skystone
+        sleep(300);
 
-            sleep(300);
+        // intake();
 
-            // intake();
+        // forward(0,0); // Intake first skystone
 
-            // forward(0,0); // Intake first skystone
+        sleep(300);
 
-            sleep(300);
+        // backward(0,0);
 
-            // backward(0,0);
+        sleep(300);
 
-            sleep(300);
+        // rotateRight(0,0);
 
-            // rotateLeft(0,0);
+        sleep(300);
 
-            sleep(300);
+        // backward(0, deliveryDistance);
 
-            // forward(0, deliveryDistance);
+        sleep(300);
 
-            sleep(300);
+        // strafeLeft(0, 0);
 
-            outtake();
-        }
+        sleep(300);
+
+        // setHookDown();
+
+        // strafeRight(0,0);
+
+        sleep(300);
+
+        // rotateLeft(0,0);
+
+        sleep(300);
+
+        // setHookUp();
+
+        // forward(0,0);
+
+        sleep(300);
+
+        // outtake();
+
+        sleep(500);
+
+        // strafeRight(0, returnDistance);
+
+        sleep(300);
+
+        // intake();
+
+        // forward(0,0);
+
+        sleep(300);
+
+        // backward(0,0);
+
+        sleep(300);
+
+        // strafeLeft(0,0);
+
+        sleep(300);
+
+        // outtake();
+
+        sleep(500);
+
+        // strafeRight(0,0);
+
+        sleep(10000);
     }
 }
