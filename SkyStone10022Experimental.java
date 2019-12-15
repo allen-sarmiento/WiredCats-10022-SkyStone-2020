@@ -89,7 +89,8 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                 }
                 else if (gamepad1.right_trigger > 0.1) {
 
-                    rTrigger = ((1 - gamepad1.right_trigger) /2 + 0.2);
+                    // rTrigger = (1 - gamepad1.right_trigger) /2 + 0.2;
+                    rTrigger = -0.8 * gamepad1.right_trigger + 1;
 
                     flpower *= rTrigger;
                     frpower *= rTrigger;
@@ -104,20 +105,20 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             }
 
             /* foundation hook */ {
-                if (gamepad2.b && bToggle == 0) {
+                if (gamepad1.b && bToggle == 0) {
 
                     bToggle = 1;
 
-                } else if (!gamepad2.b && bToggle == 1) {
+                } else if (!gamepad1.b && bToggle == 1) {
 
                     setHookDown();
                     bToggle = 2;
 
-                } else if (gamepad2.b && bToggle == 2) {
+                } else if (gamepad1.b && bToggle == 2) {
 
                     bToggle = 3;
 
-                } else if (!gamepad2.b && bToggle == 3) {
+                } else if (!gamepad1.b && bToggle == 3) {
 
                     setHookUp();
                     bToggle = 0;
@@ -125,11 +126,11 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             }
 
             /* vertical slides */ {
-                if (gamepad2.dpad_up) {
+                if (gamepad1.dpad_up) {
 
                     ySlidesUp();
 
-                } else if (gamepad2.dpad_down) {
+                } else if (gamepad1.dpad_down) {
 
                     ySlidesDown();
 
@@ -141,11 +142,11 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             }
 
             /* horizontal slides */ {
-                if (gamepad2.dpad_right) {
+                if (gamepad1.dpad_right) {
 
                     xSlideForward();
 
-                } else if (gamepad2.dpad_left) {
+                } else if (gamepad1.dpad_left) {
 
                     xSlideBackward();
 
@@ -156,8 +157,8 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             }
 
             /* intake */ {
-                    //intake
-                 if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
+                //intake
+                if (gamepad1.right_bumper && (rBumperToggle == -1 || rBumperToggle == 0)) {
 
                     rBumperToggle = 10;
 
@@ -189,26 +190,25 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
             }
 
             /* grabber */ {
-                if (gamepad2.x && xToggle == 0) {
+                if (gamepad1.x && xToggle == 0) {
 
                     xToggle = 1;
 
-                } else if (!gamepad2.x && xToggle == 1) {
+                } else if (!gamepad1.x && xToggle == 1) {
 
                     activateClamp();
-                    intakeOff();
                     xToggle = 2;
 
-                } else if (gamepad2.x && xToggle == 2) {
+                } else if (gamepad1.x && xToggle == 2) {
 
                     xToggle = 3;
 
-                } else if (!gamepad2.x && xToggle == 3) {
+                } else if (!gamepad1.x && xToggle == 3) {
 
                     deactivateClamp();
                     xToggle = 0;
                 }
-                telemetry.addLine("Grabber position = " +clamp.getPosition());
+                telemetry.update();
             }
 
 
@@ -242,7 +242,8 @@ public class SkyStone10022Experimental extends SkyStone10022LinearOpMode {
                     intake();
                     rBumperToggle = 2;
 
-                } else if (gamepad1.right_bumper && rBumperToggle == 2) {           // fix
+                } else i7
+                f (gamepad1.right_bumper && rBumperToggle == 2) {           //fix
 
                     rBumperToggle = 3;
 
