@@ -37,7 +37,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
     static final double COUNTS_PER_MOTOR_REV = 1680;
     static final double DRIVE_GEAR_REDUCTION = 1;
     static final double COUNTS_PER_INCH = ((COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (8.8857658763)) / 2;
-    static final double DRIVE_INCHES_PER_DEGREE = 22.0 / 90; // Outdated
+    static final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
 
     // REV IMU
     // BNO055IMU imu;
@@ -81,6 +81,7 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
         // parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         // imu = hardwareMap.get(BNO055IMU.class,"imu");
         // imu.initialize(parameters);
+
     }
 
     public void forward(double power, double inches) {
@@ -401,29 +402,29 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void setHookDown() {
 
-        setHookL.setPosition(0.9);
-        setHookR.setPosition(0.9);
+        setHookL.setPosition(0.775);
+        setHookR.setPosition(0.775);
     }
 
     public void setHookUp() {
 
-        setHookL.setPosition(0.375);
-        setHookR.setPosition(0.375);
+        setHookL.setPosition(0.15);
+        setHookR.setPosition(0.15);//
     }
 
     // y slides methods
 
     public void ySlidesUp() {
 
-        ySlideL.setPower(0.6);
-        ySlideR.setPower(0.6);
+        ySlideL.setPower(0.8);
+        ySlideR.setPower(0.8);
 
     }
 
     public void ySlidesDown() {
 
-        ySlideL.setPower(-0.6);
-        ySlideR.setPower(-0.6);
+        ySlideL.setPower(-0.8);
+        ySlideR.setPower(-0.8);
 
     }
 
@@ -439,8 +440,8 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void intake() {
 
-        leftIntake.setPower(1);
-        rightIntake.setPower(1);
+        leftIntake.setPower(1.0);
+        rightIntake.setPower(1.0);
 
     }
 
@@ -483,14 +484,12 @@ public abstract class SkyStone10022LinearOpMode extends LinearOpMode {
 
     public void activateClamp() {
 
-        clamp.setPosition(0.6);
-
+        clamp.setPosition(0);         // needs to be adjusted
     }
 
     public void deactivateClamp() {
 
-        clamp.setPosition(0.8);
-
+        clamp.setPosition(0.875);
     }
 
     // direction
