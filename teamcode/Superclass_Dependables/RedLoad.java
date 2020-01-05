@@ -46,6 +46,7 @@ public class RedLoad extends Skystone10022Superclass {
             activateClamp();
 
             //deliver
+            ySlidesUp();
             strafeRight(0.75, 60);
 
         } else if (stonePosition == 5) {
@@ -71,6 +72,7 @@ public class RedLoad extends Skystone10022Superclass {
             activateClamp();
 
             //deliver
+            ySlidesUp();
             strafeRight(0.75, 55);
 
         } else {
@@ -97,15 +99,14 @@ public class RedLoad extends Skystone10022Superclass {
             activateClamp();
 
             //deliver
+            ySlidesUp();
             strafeRight(0.75, 50);
 
         }
 
         //place
-        ySlidesUp();
-        sleep(500);
-        deactivateClamp();
         ySlidesStop();
+        deactivateClamp();
 
         //move foundation
         rotateRight(0.75, 90);
