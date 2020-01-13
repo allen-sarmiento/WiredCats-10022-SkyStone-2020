@@ -5,34 +5,38 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.Superclass_Dependables.ReferenceClasses.PIDController;
+
+// UPDATED
 
 public abstract class Skystone10022Superclass extends LinearOpMode {
 
     //DECLARATION
 
     // DRIVETRAIN
-    DcMotor frontLeft, frontRight, backLeft, backRight;
-    double flpower, frpower, blpower, brpower;
+    public DcMotor frontLeft, frontRight, backLeft, backRight;
+    public double flpower, frpower, blpower, brpower;
 
     // CLAMP
-    Servo clamp;
+    public Servo clamp;
 
     // INTAKE
-    DcMotor leftIntake, rightIntake;
+    public DcMotor leftIntake, rightIntake;
 
     // HOOK
-    Servo setHookL;
-    Servo setHookR;
+    public Servo setHookL;
+    public Servo setHookR;
 
     // LINEAR SLIDES
-    DcMotor ySlideL, ySlideR;
-    CRServo xSlide;
+    public DcMotor /*ySlideL,*/ ySlideR;
+    public CRServo xSlide;
 
     // CONTROLLER VARIABLES
-    int bToggle = 0, xToggle = 0, rBumperToggle = 0;
-    double rTrigger = 0;
+    public int bToggle = 0, xToggle = 0, rBumperToggle = 0;
+    public double rTrigger = 0;
 
     // ROBOT CONSTANTS
     static final double COUNTS_PER_MOTOR_REV = 1680;
@@ -41,13 +45,21 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     static final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
 
     // REV IMU
-    BNO055IMU imu;
-    Orientation theta;
-    double temp;
+    public BNO055IMU imu;
+    public Orientation theta;
+    public double temp;
+
+    // PID Control
+    PIDController pidRotate;
+
+    ElapsedTime runtime = new ElapsedTime();
 
     public void initialize() {
 
         //DEVICE INITIALIZATION
+
+        // RUNTIME
+        runtime.startTime();
 
         // DRIVETRAIN
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
@@ -73,14 +85,18 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         // LINEAR SLIDES
         xSlide = hardwareMap.crservo.get("xSlide");
-        ySlideL = hardwareMap.dcMotor.get("ySlideL");
+
+        //ySlideL = hardwareMap.dcMotor.get("ySlideL");
         ySlideR = hardwareMap.dcMotor.get("ySlideR");
 
         // REV IMU
-        // BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        // parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        // imu = hardwareMap.get(BNO055IMU.class, "imu");
-        // imu.initialize(parameters);
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        // PID Control
+        pidRotate = new PIDController(0,0,0);
     }
 
     // METHODS
@@ -399,6 +415,47 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         }
     }
 
+    public void extendY(double power, int ticks) {
+
+        if (opModeIsActive()) {
+
+            //ySlideL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            ySlideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            //ySlideL.setTargetPosition(ticks);
+            ySlideR.setTargetPosition(ticks);
+
+            //ySlideL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            ySlideR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (opModeIsActive() /*&& ySlideL.isBusy()*/ && ySlideR.isBusy()) {
+
+                ySlideR.setPower(power);
+                //ySlideL.setPower(power);
+            }
+
+            // Stop all motion;
+            ySlideR.setPower(0);
+            //ySlideL.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            //ySlideL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            ySlideR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public void extendX(int msec) {
+
+        runtime.reset();
+
+        while (runtime.milliseconds() < msec) {
+
+            xSlide.setPower(1);
+        }
+
+        xSlide.setPower(0);
+    }
+
     // HOOK
 
     public void setHookDown() {
@@ -410,50 +467,44 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public void setHookUp() {
 
         setHookL.setPosition(0.15);
-        setHookR.setPosition(0.15);//
+        setHookR.setPosition(0.15);
     }
 
     // Y SLIDES
 
     public void ySlidesUp() {
 
-        ySlideL.setPower(0.8);
-        ySlideR.setPower(0.8);
-
+        //ySlideL.setPower(-0.8);
+        ySlideR.setPower(-0.8);
     }
 
     public void ySlidesDown() {
 
-        ySlideL.setPower(-0.8);
-        ySlideR.setPower(-0.8);
-
+        //ySlideL.setPower(0.8);
+        ySlideR.setPower(0.8);
     }
 
     public void ySlidesStop() {
 
-        ySlideL.setPower(0.0);
+        //ySlideL.setPower(0.0);
         ySlideR.setPower(0.0);
-
     }
 
     // X SLIDES
 
-    public void xSlideForward() {
-
-        xSlide.setPower(1.0);
-
-    }
-
-    public void xSlideBackward() {
+    public void xSlideForward() {   //unused
 
         xSlide.setPower(-1.0);
-
     }
 
-    public void xSlideOff() {
+    public void xSlideBackward() {  //unused
+
+        xSlide.setPower(1.0);
+    }
+
+    public void xSlideOff() {       //unused
 
         xSlide.setPower(0.0);
-
     }
 
 
@@ -482,7 +533,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void activateClamp() {
 
-        clamp.setPosition(0);
+        clamp.setPosition(0.0);
     }
 
     public void deactivateClamp() {
