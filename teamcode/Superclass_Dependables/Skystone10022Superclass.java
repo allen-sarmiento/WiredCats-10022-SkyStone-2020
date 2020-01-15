@@ -2,20 +2,14 @@ package org.firstinspires.ftc.teamcode.Superclass_Dependables;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Superclass_Dependables.ReferenceClasses.PIDController;
 
-import static org.firstinspires.ftc.teamcode.Utilities.Control.*;
-import static org.firstinspires.ftc.teamcode.Utilities.UniversalVariables.*;
-import static org.firstinspires.ftc.teamcode.Utilities.RobotVariables.*;
-
-// UPDATED
+import static org.firstinspires.ftc.teamcode.Utilities.ControlConstants.*;
+import static org.firstinspires.ftc.teamcode.Utilities.RobotObjects.*;
 
 public abstract class Skystone10022Superclass extends LinearOpMode {
 
@@ -60,328 +54,172 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-        // PID Control
+        // PID ControlConstants
         pidRotate = new PIDController(0,0,0);
     }
 
-    // METHODS
+    // DRIVETRAIN ----------------------------------------------------------------------------------
 
     public void forward(double power, double inches) {
 
+        double target = inches * TICKS_PER_INCH;
+
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setDriveTarget(target,
+                    1, 1,
+                    1, 1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
     public void backward(double power, double inches) {
 
+        double target = inches * TICKS_PER_INCH;
+
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setDriveTarget(target,
+                    -1, -1,
+                    -1, -1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
     public void strafeLeft(double power, double inches) {
 
+        double target = inches * TICKS_PER_INCH;
+
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setDriveTarget(target,
+                    -1, 1,
+                    1, -1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
     public void strafeRight(double power, double inches) {
 
+        double target = inches * TICKS_PER_INCH;
+
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setDriveTarget(target,
+                    1, -1,
+                    -1, 1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-            backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-            backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
     public void diagonal(double power, double inches, int quadrant) {
 
-        // accepts quadrants:
-        // 2 1
-        // 3 4
-        // can update this to accept angles at a later time
+        double target = inches * TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
 
-            // goes a certain direction based on the quadrant integer
-            {
                 if (quadrant == 1) {
-                    frontLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-                    backRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+                    frontLeft.setTargetPosition((int)target);
+                    backRight.setTargetPosition((int)target);
                 }
-                if (quadrant == 2) {
-                    backLeft.setTargetPosition((int) (inches * COUNTS_PER_INCH));
-                    frontRight.setTargetPosition((int) (inches * COUNTS_PER_INCH));
+
+                else if (quadrant == 2) {
+                    backLeft.setTargetPosition((int)target);
+                    frontRight.setTargetPosition((int)target);
                 }
-                if (quadrant == 3) {
-                    frontLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-                    backRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+
+                else if (quadrant == 3) {
+                    frontLeft.setTargetPosition((int)(-target));
+                    backRight.setTargetPosition((int) (-target));
                 }
-                if (quadrant == 4) {
-                    backLeft.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
-                    frontRight.setTargetPosition((int) (-inches * COUNTS_PER_INCH));
+
+                else if (quadrant == 4) {
+                    backLeft.setTargetPosition((int) (-target));
+                    frontRight.setTargetPosition((int) (-target));
                 }
-            }
 
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
 
         }
     }
 
-    public void rotateLeft(double power, int angle) {
+    public void rotateLeft(double power, double angle) {
+
+        double target = angle * TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
 
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setRotateTarget(target,
+                    -1, 1,
+                    -1, 1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
-    public void rotateRight(double power, int angle) {
+    public void rotateRight(double power, double angle) {
+
+        double target = angle * TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
 
         if (opModeIsActive()) {
 
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            resetDriveEncoders();
+            setRotateTarget(target,
+                    1, -1,
+                    1, -1);
+            setDriveMode();
 
-            frontLeft.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backLeft.setTargetPosition((int) (angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            frontRight.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
-            backRight.setTargetPosition((int) (-angle * COUNTS_PER_INCH * DRIVE_INCHES_PER_DEGREE));
+            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
+                setDrivePower(power);
 
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
-
-                frontLeft.setPower(power);
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                backRight.setPower(power);
-            }
-
-            // Stop all motion;
-            frontLeft.setPower(0);
-            backLeft.setPower(0);
-            frontRight.setPower(0);
-            backRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stopDrive();
+            resetDriveMode();
         }
     }
 
-    // HOOK
-
+    // HOOK ----------------------------------------------------------------------------------------
     public void hookDown() {
 
         hookL.setPosition(HOOK_DOWN);
@@ -394,14 +232,13 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         hookR.setPosition(HOOK_UP);
     }
 
-    // Y SLIDES
-
-    public void extendY() {
+    // Y SLIDES ------------------------------------------------------------------------------------
+    public void yExtend() {
 
         ySlide.setPower(ON);
     }
 
-    public void retractY() {
+    public void yRetract() {
 
         ySlide.setPower(REVERSE);
     }
@@ -411,19 +248,20 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         ySlide.setPower(OFF);
     }
 
-    // X SLIDES
+    // X SLIDES ------------------------------------------------------------------------------------
+    public void xExtend(double power, int inches) {
 
-    public void extendX(double power, int inches) {
+        //inches =
 
         runEncoder(xSlide, power, inches);
     }
 
-    public void extendX() {
+    public void xExtend() {
 
         xSlide.setPower(ON);
     }
 
-    public void retractX() {
+    public void xRetract() {
 
         xSlide.setPower(REVERSE);
     }
@@ -434,8 +272,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
 
-    // INTAKE
-
+    // INTAKE --------------------------------------------------------------------------------------
     public void intake() {
 
         leftIntake.setPower(ON);
@@ -455,8 +292,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
 
-    // CLAMP
-
+    // CLAMP ---------------------------------------------------------------------------------------
     public void closeClamp() {
 
         clamp.setPosition(CLAMP_DOWN);
@@ -465,5 +301,84 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public void openClamp() {
 
         clamp.setPosition(CLAMP_UP);
+    }
+
+    // UTILITY METHODS -----------------------------------------------------------------------------
+
+    public static void runEncoder(DcMotor m_motor, double power, double inches) {
+
+        m_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        m_motor.setTargetPosition((int)(inches * TICKS_PER_INCH));
+
+        m_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (m_motor.isBusy())
+            m_motor.setPower(power);
+
+        // Stop all motion;
+        m_motor.setPower(0);
+
+        // Turn off RUN_TO_POSITION
+        m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    // DRIVETRAIN ----------------------------------------------------------------------------------
+    public void resetDriveEncoders() {
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    // DRIVE
+    public void setDriveTarget(double dist, double fl, double fr, double bl, double br) {
+
+        frontLeft.setTargetPosition((int) (fl * dist));
+        backLeft.setTargetPosition((int) (bl * dist));
+        frontRight.setTargetPosition((int) (fr * dist));
+        backRight.setTargetPosition((int) (br * dist));
+    }
+
+    // ROTATIONAL
+    public void setRotateTarget(double deg, double fl, double fr, double bl, double br) {
+
+        frontLeft.setTargetPosition((int) (fl * deg));
+        backLeft.setTargetPosition((int) (bl * deg));
+        frontRight.setTargetPosition((int) (fr * deg));
+        backRight.setTargetPosition((int) (br * deg));
+    }
+
+    public void setDriveMode() {
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void resetDriveMode() {
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void setDrivePower(double pow) {
+
+        frontLeft.setPower(pow);
+        backLeft.setPower(pow);
+        frontRight.setPower(pow);
+        backRight.setPower(pow);
+    }
+
+    public void stopDrive() {
+
+        frontLeft.setPower(0);
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
     }
 }
