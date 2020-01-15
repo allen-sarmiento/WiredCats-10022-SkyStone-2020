@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.Superclass_Dependables.Skystone10022Superclass;
+import static org.firstinspires.ftc.teamcode.Utilities.RobotObjects.*;
 
 @TeleOp (name = "Test: Encoder")
 

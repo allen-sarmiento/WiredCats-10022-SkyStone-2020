@@ -28,11 +28,11 @@ public class RedFBridgeP extends Skystone10022Superclass {
         strafeLeft(0.2,11.5);
         sleep(250);
 
-        setHookDown();
+        hookDown();
         sleep(250);
 
         strafeRight(0.2,13);
-        setHookUp();
+        hookUp();
         sleep(250);
 
         telemetry.addLine("Dragged");

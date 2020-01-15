@@ -20,7 +20,7 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
         // deliver stone 1
         intake();
         forward(0.2, 15.5);
-        activateClamp();
+        closeClamp();
         intakeOff();
         sleep(1000);
 
@@ -30,7 +30,7 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
         strafeLeft(0.2, 16);
         sleep(250);
 
-        deactivateClamp();
+        openClamp();
         forward(0.2, 2.5);
         outtake();
         sleep(250);
@@ -44,7 +44,7 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
 
         intake();
         forward(0.2, 10);
-        activateClamp();
+        closeClamp();
         sleep(250);
 
         rotateLeft(0.2, 91);
@@ -52,7 +52,7 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
 
         strafeLeft(0.2, 11.2);
         intakeOff();
-        deactivateClamp();
+        openClamp();
         sleep(250);
 
         forward(0.2, 18.5);
