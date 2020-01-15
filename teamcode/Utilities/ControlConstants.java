@@ -15,7 +15,7 @@ public class ControlConstants {
     public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
     public static final double DRIVE_TICKS_PER_MOTOR_REV = 537.6;
     public static final double DRIVE_GEAR_REDUCTION = 1;
-    public static final double TICKS_PER_INCH = ((DRIVE_TICKS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_INCHES);
+    public static final double DRIVE_TICKS_PER_INCH = ((DRIVE_TICKS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_INCHES);
 
     public static final double ROBOT_RADIUS_INCHES  = 9.933;
     public static final double ROBOT_CIRCUMFERENCE_INCHES  = 2 * ROBOT_RADIUS_INCHES * Math.PI;

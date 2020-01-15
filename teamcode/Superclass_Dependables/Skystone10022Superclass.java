@@ -62,7 +62,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void forward(double power, double inches) {
 
-        double target = inches * TICKS_PER_INCH;
+        double target = inches * DRIVE_TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
@@ -82,7 +82,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void backward(double power, double inches) {
 
-        double target = inches * TICKS_PER_INCH;
+        double target = inches * DRIVE_TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
@@ -102,7 +102,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void strafeLeft(double power, double inches) {
 
-        double target = inches * TICKS_PER_INCH;
+        double target = inches * DRIVE_TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
@@ -122,7 +122,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void strafeRight(double power, double inches) {
 
-        double target = inches * TICKS_PER_INCH;
+        double target = inches * DRIVE_TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
@@ -142,7 +142,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void diagonal(double power, double inches, int quadrant) {
 
-        double target = inches * TICKS_PER_INCH;
+        double target = inches * DRIVE_TICKS_PER_INCH;
 
         if (opModeIsActive()) {
 
@@ -181,7 +181,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void rotateLeft(double power, double angle) {
 
-        double target = angle * TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
+        double target = angle * DRIVE_TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
 
         if (opModeIsActive()) {
 
@@ -201,7 +201,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void rotateRight(double power, double angle) {
 
-        double target = angle * TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
+        double target = angle * DRIVE_TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
 
         if (opModeIsActive()) {
 
@@ -309,7 +309,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         m_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        m_motor.setTargetPosition((int)(inches * TICKS_PER_INCH));
+        m_motor.setTargetPosition((int)(inches * DRIVE_TICKS_PER_INCH));
 
         m_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
