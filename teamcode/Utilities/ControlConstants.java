@@ -5,7 +5,7 @@ import static org.firstinspires.ftc.teamcode.Utilities.UniversalVariables.*;
 public class ControlConstants {
 
     // TOGGLES
-    public static int b = 0, x = 0, rBumper = 0;
+    public static int a = 0, b = 0, x = 0, y = 0, up = 0, down = 0, left = 0;
 
     // GENERAL CONTROL -----------------------------------------------------------------------------
     public static final double ON = 1;
@@ -28,6 +28,8 @@ public class ControlConstants {
     // public static final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
 
     // Y SLIDES ------------------------------------------------------------------------------------
+    public static int yTargetInches = 0;
+
     public static final double MAX_LEVEL = 6;
     public static final double Y_MIN_EXTENSION = GRND;
     public static final double Y_MAX_EXTENSION = PLTFM + MAX_LEVEL * STONE_HEIGHT;
@@ -40,7 +42,7 @@ public class ControlConstants {
 
     // X SLIDES ------------------------------------------------------------------------------------
     public static final double X_MIN_EXTENSION = 0;
-    public static final double X_MAX_EXTENSION = 10; // temp
+    public static final double X_MAX_EXTENSION = 0; // temp
 
     public static final double X_SPOOL_DIAMETER_INCHES = 50;
     public static final double X_SPOOL_CIRCUMFERENCE_INCHES = X_SPOOL_DIAMETER_INCHES * Math.PI;
@@ -51,6 +53,7 @@ public class ControlConstants {
     // CLAMP ---------------------------------------------------------------------------------------
     public static final double CLAMP_DOWN = 0.875;
     public static final double CLAMP_UP = 0;
+    public static boolean isLoaded;
 
     // INTAKE --------------------------------------------------------------------------------------
     public static final double HOOK_UP = 0.15;

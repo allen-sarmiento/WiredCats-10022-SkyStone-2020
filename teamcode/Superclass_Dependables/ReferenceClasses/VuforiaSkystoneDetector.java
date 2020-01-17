@@ -28,7 +28,7 @@ public class VuforiaSkystoneDetector extends Skystone10022Superclass {
 
         waitForStart();
 
-        int skystone = vuforiaScan(true, true);
+        int skystone = vuforiaScan(true);
 
         telemetry.addLine("SCAN FINISHED");
         telemetry.addLine("Stone Position: " + skystone);

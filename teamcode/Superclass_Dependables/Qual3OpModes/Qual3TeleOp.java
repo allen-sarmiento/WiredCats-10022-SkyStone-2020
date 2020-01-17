@@ -2,10 +2,27 @@ package org.firstinspires.ftc.teamcode.Superclass_Dependables.Qual3OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Superclass_Dependables.Skystone10022Superclass;
 
 import static org.firstinspires.ftc.teamcode.Utilities.RobotObjects.*;
 import static org.firstinspires.ftc.teamcode.Utilities.ControlConstants.*;
+import static org.firstinspires.ftc.teamcode.Utilities.UniversalVariables.*;
+
+/*
+ *      CURRENT CONTROLS:
+ *
+ *      A: Stacking
+ *      B: Hook
+ *      Y: 180deg Rotation
+ *
+ *      Dpad Up: Set Extension Target
+ *      Dpad Down: Set Retraction Target
+ *      Dpad Left: Reset Target and Slides
+ *      Dpad Right: Run to Target
+ *
+ *      Right Trigger: Slow-mode
+ */
 
 @TeleOp (name = "Q3: TeleOp")
 
@@ -71,6 +88,16 @@ public class Qual3TeleOp extends Skystone10022Superclass {
             frontRight.setPower(frpower);
             backRight.setPower(brpower);
 
+            // DRIVE -------------------------------------------------------------------------------
+            if (gamepad1.y && y == 0)
+                y = 1;
+
+            else if (!gamepad1.dpad_up && y == 1) {
+
+                rotateRight(1, 180);
+                y = 0;
+            }
+
             // HOOK --------------------------------------------------------------------------------
             if (gamepad1.b && b == 0)
                 b = 1;
@@ -89,42 +116,137 @@ public class Qual3TeleOp extends Skystone10022Superclass {
             }
 
             // Y SLIDES ----------------------------------------------------------------------------
-            if (gamepad1.dpad_up)
-                yExtend();
 
-            else if (gamepad1.dpad_down)
-                yRetract();
+            // Every Dpad_Up press increases level until max level
+            // Dpad_Right press runs slides
+            if (getYPosInches() < Y_MAX_EXTENSION) {
 
-            else
-                yOff();
+                if (gamepad1.dpad_up && up == 0)
+                    up = 1;
 
-            // X SLIDES ----------------------------------------------------------------------------
-            if (gamepad1.dpad_right)
-                xExtend();
+                else if (!gamepad1.dpad_up && up == 1) {
 
-            else if (gamepad1.dpad_left)
-                xRetract();
+                    yTargetInches += STONE_HEIGHT;
+                    up = 2;
+                }
 
-            else
-                xOff();
+                else if (gamepad1.dpad_right && up == 2)
+                    up = 3;
 
-            // CLAMP -------------------------------------------------------------------------------
+                else if (!gamepad1.dpad_right && up == 3) {
+
+                    yExtend(1,yTargetInches);
+                    yTargetInches = 0;
+                    up = 0;
+                }
+            }
+
+            // Every Dpad_Down press decreases level until min level
+            // Dpad_Right press runs slides
+            if (getYPosInches() > Y_MIN_EXTENSION) {
+
+                if (gamepad1.dpad_down && down == 0)
+                    down = 1;
+
+                else if (!gamepad1.dpad_down && down == 1) {
+
+                    yTargetInches += STONE_HEIGHT;
+                    down = 2;
+                }
+
+                else if (gamepad1.dpad_right && down == 2)
+                    down = 3;
+
+                else if (!gamepad1.dpad_right && down == 3) {
+
+                    yRetract(1,yTargetInches);
+                    yTargetInches = 0;
+                    down = 0;
+                }
+            }
+
+            // Dpad_Left press resets target and slides
+            if (gamepad1.dpad_left && left == 0)
+                left = 1;
+
+            else if (!gamepad1.dpad_left && left == 1) {
+
+                yTargetInches = 0;
+                yRetract(1, getYPosInches() - Y_MIN_EXTENSION);
+                left = 0;
+            }
+
+            // STACK -------------------------------------------------------------------------------
+
+            // First 'A' press extends X-Slides to stackable position
+            // 'B' press after first 'A' press retracts X-Slides
+            // Second 'A' press places stone
+            // Third 'A' press resets robot to intake-ready position
+            if (gamepad1.a && a == 0)
+                a = 1;
+
+            else if (!gamepad1.a && a == 1) {
+
+                xExtend(1, X_MAX_EXTENSION - getXPosInches());
+                a = 2;
+            }
+
+            else if (gamepad1.b && a == 2) {
+
+                xRetract(1, X_MAX_EXTENSION - getXPosInches());
+                a = 0;
+            }
+
+            else if (gamepad1.a && a == 2)
+                a = 3;
+
+            else if (!gamepad1.a && a == 3) {
+
+                stack();
+                a = 4;
+            }
+
+            else if (gamepad1.a && a == 4)
+                a = 5;
+
+            else if (!gamepad1.a && a == 5) {
+
+                resetRobot();
+                a = 0;
+            }
+
+            // CLAMP-INTAKE ------------------------------------------------------------------------
+
+            if(range.getDistance(DistanceUnit.INCH) < 0.5) {
+
+                closeClamp();
+                intakeOff();
+            }
+
+            else {
+
+                openClamp();
+                intake();
+            }
+
+            // CAN BE AUTOMATED WITH SENSORS
+            /*
             if (gamepad1.x && x == 0)
                 x = 1;
 
             else if (!gamepad1.x && x == 1) {
-                openClamp();
-                x = 2;
-
-            } else if (gamepad1.x && x == 2)
-                x = 3;
-
-            else if (!gamepad1.x && x == 3) {
                 closeClamp();
-                x = 0;
+                x = 2;
             }
+             */
 
             // INTAKE ------------------------------------------------------------------------------
+
+            // CAN BE AUTOMATED WITH SENSORS
+            /*
+            // Pressing either bumper twice in succession stops intake
+            // Pressing right bumper intakes
+            // Pressing left bumper outtakes
             if (gamepad1.right_bumper && (rBumper == 4 || rBumper == 0))
                 rBumper = 1;
 
@@ -150,6 +272,7 @@ public class Qual3TeleOp extends Skystone10022Superclass {
                 intakeOff();
                 rBumper = 0;
             }
+             */
         }
     }
 }

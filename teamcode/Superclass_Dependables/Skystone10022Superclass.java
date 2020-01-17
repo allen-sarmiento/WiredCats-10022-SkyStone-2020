@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode.Superclass_Dependables;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Environment;
+import android.transition.Slide;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.vuforia.CameraDevice;
 import com.vuforia.Image;
@@ -27,9 +29,11 @@ import java.io.IOException;
 import static android.graphics.Bitmap.*;
 import static org.firstinspires.ftc.teamcode.Utilities.ControlConstants.*;
 import static org.firstinspires.ftc.teamcode.Utilities.RobotObjects.*;
+import static org.firstinspires.ftc.teamcode.Utilities.UniversalVariables.*;
 
 public abstract class Skystone10022Superclass extends LinearOpMode {
 
+    // Initialize robot
     public void initialize() {
 
         //DEVICE INITIALIZATION
@@ -65,11 +69,12 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         xSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         ySlide.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // REV IMU
+        // REV Sensors
         BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
         imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(imuParameters);
+        range = hardwareMap.get(DistanceSensor.class, "range");
 
         // VUFORIA
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -86,8 +91,36 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         targetsSkyStone.activate();
 
+        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); // Enables RGB565 format for image
+        vuforia.setFrameQueueCapacity(1); // Store only one frame at a time
+
         // PID ControlConstants
-        pidRotate = new PIDController(0,0,0);
+        pidRotate = new PIDController(1,1,1);
+        pidDrive = new PIDController(0,0,0);
+        pidXSlides = new PIDController(0,0,0);
+        pidYSlides = new PIDController(0,0,0);
+    }
+
+    // Extend X-Slides and place stone
+    public void stack() {
+
+        // Checks if X-Slides are moving before stacking
+        if (!xSlide.isBusy()) {
+
+            // Place stone
+            yRetract(1,PLTFM);
+            openClamp();
+            yExtend(1,PLTFM);
+        }
+    }
+
+    // Intake-ready position
+    public void resetRobot() {
+
+        openClamp();
+        xRetract(1, getXPosInches() - X_MIN_EXTENSION);
+        yRetract(1, getYPosInches() - Y_MIN_EXTENSION);
+        intake();
     }
 
     // DRIVETRAIN ----------------------------------------------------------------------------------
@@ -264,12 +297,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
     // Y SLIDES ------------------------------------------------------------------------------------
-    public void yExtend(double power, int inches) {
-
-        double target = inches * Y_TICKS_PER_INCH;
-
-        runEncoder(ySlide, power, target);
-    }
 
     public void yExtend() {
 
@@ -286,17 +313,21 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         ySlide.setPower(OFF);
     }
 
-    // X SLIDES ------------------------------------------------------------------------------------
-    public void xExtend(double power, int inches) {
+    public void yExtend(double power, double inches) {
 
-        double target = inches * X_TICKS_PER_INCH;
-
-        if (target > X_MAX_EXTENSION)
-            target = X_MAX_EXTENSION;
-
-        runEncoder(xSlide, power, target);
+        checkYTarget(inches);
+        double ticks = inches * Y_TICKS_PER_INCH; // Convert to ticks
+        runEncoder(ySlide, power, ticks);
     }
 
+    public void yRetract(double power, double inches) {
+
+        checkYTarget(-inches); // Negative distance (retract)
+        double ticks = inches * Y_TICKS_PER_INCH; // Convert to ticks
+        runEncoder(ySlide, power, ticks);
+    }
+
+    // X SLIDES ------------------------------------------------------------------------------------
     public void xExtend() {
 
         xSlide.setPower(ON);
@@ -310,6 +341,20 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public void xOff() {
 
         xSlide.setPower(OFF);
+    }
+
+    public void xExtend(double power, double inches) {
+
+        checkXTarget(inches);
+        double ticks = inches * X_TICKS_PER_INCH; // Convert to ticks
+        runEncoder(xSlide, power, ticks);
+    }
+
+    public void xRetract(double power, double inches) {
+
+        checkYTarget(-inches); // Negative distance (Retract)
+        double ticks = inches * X_TICKS_PER_INCH; // Convert to ticks
+        runEncoder(xSlide, power, ticks);
     }
 
     // INTAKE --------------------------------------------------------------------------------------
@@ -344,32 +389,14 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
     // VUFORIA -------------------------------------------------------------------------------------
-    public int vuforiaScan(boolean saveBitmap, boolean redAlliance) {
 
-        // Credit to Drew Kinneer of FTC 10435 Circuit Breakers
+    // INCOMPLETE
+    public int vuforiaScan(boolean saveBitmap) {
 
-        int pos = -1;
-
-        Image rgbImage = null;
-
-        double yellowCountL = 1;
-        double yellowCountC = 1;
-        double yellowCountR = 1;
-
-        double blackCountL = 1;
-        double blackCountC = 1;
-        double blackCountR = 1;
-
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); // Enables RGB565 format for image
-        VuforiaLocalizer.CloseableFrame closeableFrame = null;
-        vuforia.setFrameQueueCapacity(1); // Store only one frame at a time
-
+        // Capture Vuforia Frame
         while (rgbImage == null) {
 
             try {
-
-                // Turn on flashlight
-                CameraDevice.getInstance().setFlashTorchMode(true);
 
                 closeableFrame = vuforia.getFrameQueue().take();
                 long numImages = closeableFrame.getNumImages();
@@ -380,12 +407,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
                         rgbImage = closeableFrame.getImage(i);
 
-                        if (rgbImage != null) {
-
-                            // Turn off flashlight
-                            CameraDevice.getInstance().setFlashTorchMode(false);
+                        if (rgbImage != null)
                             break;
-                        }
                     }
                 }
 
@@ -408,24 +431,11 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             String path = Environment.getExternalStorageDirectory().toString();
             FileOutputStream out = null;
 
-            // Set File Name
-            String bitmapName;
-            String croppedBitmapName;
-
-            if (redAlliance) {
-                bitmapName = "BitmapRED.png";
-                croppedBitmapName = "BitmapCroppedRED.png";
-
-            } else {
-                bitmapName = "BitmapBLUE.png";
-                croppedBitmapName = "BitmapCroppedBLUE.png";
-            }
-
             // Save Bitmap to file
             if (saveBitmap) {
                 try {
 
-                    File file = new File(path, bitmapName);
+                    File file = new File(path, "Bitmap");
                     out = new FileOutputStream(file);
                     quarry.compress(Bitmap.CompressFormat.PNG, 100, out);
 
@@ -446,45 +456,38 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             }
 
             // Crop Bitmap
+            // (0,0) is the top-left corner of the bitmap
             int cropStartX;
             int cropStartY;
             int cropWidth;
             int cropHeight;
 
-            if (redAlliance) {
-                // Temp Dimensions
-                cropStartX = (int) ((140.0 / 720.0) * quarry.getWidth());
-                cropStartY = (int) ((100.0 / 480.0) * quarry.getHeight());
-                cropWidth = (int) ((550.0 / 720.0) * quarry.getWidth());
-                cropHeight = (int) ((130.0 / 480.0) * quarry.getHeight());
+            cropStartX = 0;
+            cropStartY = 0;
+            cropWidth = (int)(0.5 * quarry.getWidth());
+            cropHeight = (int)(0.5 * quarry.getHeight());
 
-            } else {
-                // Temp Dimensions
-                cropStartX = (int) ((370.0 / 1280.0) * quarry.getWidth());
-                cropStartY = (int) ((170.0 / 720.0) * quarry.getHeight());
-                cropWidth = (int) ((890.0 / 1280.0) * quarry.getWidth());
-                cropHeight = (int) ((125.0 / 720.0) * quarry.getHeight());
-            }
-
-            telemetry.addLine("VuforiaScan \n"
-                    + "Crop StartX: " + cropStartX
-                    + "Crop StartY: " + cropStartY
-                    + "Crop Width: " + cropStartY
-                    + "Crop Height: " + cropStartY
-                    + "Original Width: " + quarry.getWidth()
+            telemetry.addLine("VuforiaScan\n"
+                    + "Crop StartX: " + cropStartX + "\n"
+                    + "Crop StartY: " + cropStartY + "\n"
+                    + "Crop Width: " + cropStartY + "\n"
+                    + "Crop Height: " + cropStartY + "\n"
+                    + "Original Width: " + quarry.getWidth() + "\n"
                     + "Original Height: " + quarry.getHeight());
             telemetry.update();
+            sleep(3000);
 
+            /*
             // Create cropped bitmap to show only stones
-            Bitmap quarryCropped = createBitmap(quarry, cropStartX, cropStartY, cropWidth, cropHeight);
+            quarry = createBitmap(quarry, cropStartX, cropStartY, cropWidth, cropHeight);
 
             // Save cropped bitmap to file
             if (saveBitmap) {
                 try {
 
-                    File file = new File(path, croppedBitmapName);
+                    File file = new File(path, "CroppedBitmap");
                     out = new FileOutputStream(file);
-                    quarryCropped.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    quarry.compress(Bitmap.CompressFormat.PNG, 100, out);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -501,83 +504,59 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     }
                 }
             }
+             */
 
             // Compress bitmap to reduce scan time
-            quarryCropped = createScaledBitmap(quarryCropped, 110, 20, true);
+            quarry = createScaledBitmap(quarry, 110, 20, true);
 
-            int height;
-            int width;
-            int pixel;
-            int bitmapWidth = quarryCropped.getWidth();
-            int bitmapHeight = quarryCropped.getHeight();
-            int colWidth = (int) ((double) bitmapWidth / 6.0);
-            int colorLStartCol = (int) ((double) bitmapWidth * (1.0 / 6.0) - ((double) colWidth / 2.0));
-            int colorCStartCol = (int) ((double) bitmapWidth * (3.0 / 6.0) - ((double) colWidth / 2.0));
-            int colorRStartCol = (int) ((double) bitmapWidth * (5.0 / 6.0) - ((double) colWidth / 2.0));
+            int height, width, pixel;
+            int bitmapWidth = quarry.getWidth(), bitmapHeight = quarry.getHeight();
+            int r = -1, g = -1, b = -1;
+
+            // From experimentation,
+            // RGB of skystone-black is approximately(120, 120, 120)
+            // RGB of stone-yellow is approximately (230, 200, 120)
+            // Sole RGB of individual pixels not very reliable in determining skystone positiion
+
+            // 1. Find the RGB sum of 9 pixels from each stone; lowest sum > skystone
+            // 2. Experiment with HSV Values
+
 
             // Traverse through each row
-            for (height = 0; height < bitmapHeight; ++height) {
+            for (height = 0; height < bitmapHeight; height++) {
 
-                // Traverse through Left Position Columns
-                for (width = colorLStartCol; width < colorLStartCol + colWidth; ++width) {
+                for (width = 0; width < bitmapWidth; width++) {
 
-                    pixel = quarryCropped.getPixel(width, height);
+                    pixel = quarry.getPixel(width, height);
 
-                    if (Color.red(pixel) < 200 || Color.green(pixel) < 200 || Color.blue(pixel) < 200) {
+                    if (Color.red(pixel) > r)
+                        r = Color.red(pixel);
 
-                        yellowCountL += Color.red(pixel);
-                        blackCountL += Color.blue(pixel);
-                    }
-                }
+                    if (Color.green(pixel) > g)
+                        g = Color.green(pixel);
 
-                // Traverse through Center Position Columns
-                for (width = colorCStartCol; width < colorCStartCol + colWidth; ++width) {
-
-                    pixel = quarryCropped.getPixel(width, height);
-
-                    if (Color.red(pixel) < 200 || Color.green(pixel) < 200 || Color.blue(pixel) < 200) {
-
-                        yellowCountL += Color.red(pixel);
-                        blackCountL += Color.blue(pixel);
-                    }
-                }
-
-                // Traverse through Right Position Columns
-                for (width = colorRStartCol; width < colorRStartCol + colWidth; ++width) {
-
-                    pixel = quarryCropped.getPixel(width, height);
-
-                    if (Color.red(pixel) < 200 || Color.green(pixel) < 200 || Color.blue(pixel) < 200) {
-
-                        yellowCountL += Color.red(pixel);
-                        blackCountL += Color.blue(pixel);
-                    }
+                    if (Color.blue(pixel) > b)
+                        b = Color.blue(pixel);
                 }
             }
 
-            double blackYellowRatioL = blackCountL / yellowCountL;
-            double blackYellowRatioC = blackCountC / yellowCountC;
-            double blackYellowRatioR = blackCountR / yellowCountR;
-
-            // Record stone position
-            if (blackYellowRatioL > blackYellowRatioC && blackYellowRatioL > blackYellowRatioR)
-                pos = 1;
-            else if (blackYellowRatioC > blackYellowRatioL && blackYellowRatioC > blackYellowRatioR)
-                pos = 2;
-            else
-                pos = 3;
+            telemetry.addLine("Max Red: " + r);
+            telemetry.addLine("Max Green: " + g);
+            telemetry.addLine("Max Blue: " + b);
+            telemetry.update();
+            sleep(20000);
         }
 
-        return pos;
+        return position = 999;
     }
 
     // UTILITY METHODS -----------------------------------------------------------------------------
 
-    public static void runEncoder(DcMotor m_motor, double power, double inches) {
+    public void runEncoder(DcMotor m_motor, double power, double ticks) {
 
         m_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        m_motor.setTargetPosition((int)(inches * DRIVE_TICKS_PER_INCH));
+        m_motor.setTargetPosition((int)ticks);
 
         m_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -591,7 +570,48 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    // DRIVETRAIN
+    public void checkXTarget(double inches) {
+
+        // Find resulting poisiton after adding target position to current position (inches)
+        double result = xSlide.getCurrentPosition() / X_TICKS_PER_INCH + inches;
+
+        // Normalize if result is result is greater than max extension
+        if (result > X_MAX_EXTENSION)
+            // Set correct distance to max extension
+            inches = (X_MAX_EXTENSION - xSlide.getCurrentPosition() / X_TICKS_PER_INCH);
+
+        // Normalize if result is result is less than min extension
+        else if (result < X_MIN_EXTENSION)
+            // Set correct distance to min extension
+            inches = (X_MIN_EXTENSION - xSlide.getCurrentPosition() / X_TICKS_PER_INCH);
+    }
+
+    public void checkYTarget(double inches) {
+
+        // Find resulting poisiton after adding target position to current position (inches)
+        double result = ySlide.getCurrentPosition() / Y_TICKS_PER_INCH + inches;
+
+        // Normalize if result is result is greater than max extension
+        if (result > Y_MAX_EXTENSION)
+            // Set correct distance to max extension
+            inches = (Y_MAX_EXTENSION - ySlide.getCurrentPosition() / Y_TICKS_PER_INCH);
+
+            // Normalize if result is result is less than min extension
+        else if (result < Y_MIN_EXTENSION)
+            // Set correct distance to min extension
+            inches = (Y_MIN_EXTENSION - ySlide.getCurrentPosition() / Y_TICKS_PER_INCH);
+    }
+
+    public double getXPosInches() {
+
+        return xSlide.getCurrentPosition() / X_TICKS_PER_INCH;
+    }
+
+    public double getYPosInches() {
+
+        return ySlide.getCurrentPosition() / Y_TICKS_PER_INCH;
+    }
+
     public void resetDriveEncoders() {
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -601,7 +621,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
     public void setDriveMode() {
-
         frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -632,7 +651,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         backRight.setPower(0);
     }
 
-    // DRIVE
     public void setDriveTarget(double dist, double fl, double fr, double bl, double br) {
 
         frontLeft.setTargetPosition((int) (fl * dist));
@@ -641,7 +659,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         backRight.setTargetPosition((int) (br * dist));
     }
 
-    // ROTATE
     public void setRotateTarget(double deg, double fl, double fr, double bl, double br) {
 
         frontLeft.setTargetPosition((int) (fl * deg));
