@@ -46,8 +46,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     // DRIVETRAIN
     public DcMotor frontLeft, frontRight, backLeft, backRight;
 
-    // CLAMP
-    public Servo clamp;
+    // CLAW
+    public Servo clawL, clawR;
 
     // INTAKE
     public DcMotor leftIntake, rightIntake;
@@ -127,9 +127,9 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public final double X_GEAR_REDUCTION = 1;
     public final double X_TICKS_PER_INCH = ((x_TICKS_PER_MOTOR_REV * X_GEAR_REDUCTION) / X_SPOOL_CIRCUMFERENCE_INCHES);
 
-    // CLAMP
-    public final double CLAMP_DOWN = 0.875;
-    public final double CLAMP_UP = 0;
+    // CLAW
+    public final double CLAW_DOWN = 0;
+    public final double CLAW_UP = 1;
     public boolean isLoaded;
 
     // INTAKE
@@ -152,8 +152,9 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        // CLAMP
-        clamp = hardwareMap.servo.get("clamp");
+        // CLAW
+        clawL = hardwareMap.servo.get("clawL");
+        clawR = hardwareMap.servo.get("clawR");
 
         // INTAKE
         leftIntake = hardwareMap.dcMotor.get("leftIntake");
@@ -208,14 +209,14 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
             // Place stone
             yRetract(1,PLTFM);
-            openClamp();
+            openClaw();
         }
     }
 
     // Intake-ready position
     public void resetRobot() {
 
-        openClamp();
+        openClaw();
         xRetract(1, getXPosInches() - X_MIN_EXTENSION);
         yRetract(1, getYPosInches() - Y_MIN_EXTENSION);
         intake();
@@ -548,15 +549,17 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
 
-    // CLAMP
-    public void closeClamp() {
+    // CLAW
+    public void closeClaw() {
 
-        clamp.setPosition(CLAMP_DOWN);
+        clawL.setPosition(CLAW_DOWN);
+        clawR.setPosition(CLAW_DOWN);
     }
 
-    public void openClamp() {
+    public void openClaw() {
 
-        clamp.setPosition(CLAMP_UP);
+        clawL.setPosition(CLAW_UP);
+        clawR.setPosition(CLAW_UP);
     }
 
     // VUFORIA
