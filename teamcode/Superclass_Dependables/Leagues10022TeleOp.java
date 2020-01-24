@@ -190,7 +190,7 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
                 a = 0;
             }
 
-            // CLAMP-INTAKE ------------------------------------------------------------------------
+            // CLAW-INTAKE ------------------------------------------------------------------------
 
             // Pressing either bumper twice in succession stops intake
             // Pressing right bumper intakes
@@ -219,14 +219,14 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
             if (gamepad1.x && x == 0)
                 x = 1;
             else if (!gamepad1.x && x == 1) {
-                closeClamp();
+                closeClaw();
                 x = 2;
             }
             else if (gamepad1.x && x == 2)
                 x = 3;
 
             else if (!gamepad1.x && x == 3) {
-                openClamp();
+                openClaw();
                 x = 0;
             }
 
@@ -238,12 +238,10 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
 
             if (isLoaded) {
 
-                closeClamp();
+                closeClaw();
                 intakeOff();
             }
              */
         }
     }
 }
-
-
