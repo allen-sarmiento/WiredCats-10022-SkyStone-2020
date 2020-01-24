@@ -17,6 +17,8 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
 
         waitForStart();
 
+        /*
+
         // deliver stone 1
         intake();
         forward(0.2, 15.5);
@@ -63,5 +65,7 @@ public class BlueQ1BridgeP extends Skystone10022Superclass {
         sleep(250);
 
         sleep(30000);
+
+         */
     }
 }

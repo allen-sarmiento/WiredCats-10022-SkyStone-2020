@@ -17,6 +17,8 @@ public class BlueFWallP extends Skystone10022Superclass {
 
         waitForStart();
 
+        /*
+
         // Align robot to foundation
         backward(0.2, 3.7);
         sleep(250);
@@ -40,5 +42,7 @@ public class BlueFWallP extends Skystone10022Superclass {
         sleep(250);
 
         sleep(30000);
+
+         */
     }
 }

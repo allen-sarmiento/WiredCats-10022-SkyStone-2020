@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Superclass_Dependables;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Environment;
-import android.transition.Slide;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,12 +10,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.vuforia.CameraDevice;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
@@ -27,19 +27,121 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static android.graphics.Bitmap.*;
-import static org.firstinspires.ftc.teamcode.Utilities.ControlConstants.*;
-import static org.firstinspires.ftc.teamcode.Utilities.RobotObjects.*;
-import static org.firstinspires.ftc.teamcode.Utilities.UniversalVariables.*;
+import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 public abstract class Skystone10022Superclass extends LinearOpMode {
+
+    // UNIVERSAL VARIABLES -------------------------------------------------------------------------
+    public final double GRND = 0;
+    public final double PLTFM = 0; // temp
+
+    public final double STONE_HEIGHT = 5;
+    public final double STONE_LENGTH = 8;
+    public final double STONE_WIDTH = 4;
+
+    public int position = -1;
+
+    // ROBOT OBJECTS -------------------------------------------------------------------------------
+
+    // DRIVETRAIN
+    public DcMotor frontLeft, frontRight, backLeft, backRight;
+
+    // CLAMP
+    public Servo clamp;
+
+    // INTAKE
+    public DcMotor leftIntake, rightIntake;
+
+    // HOOK
+    public Servo hookL, hookR;
+
+    // LINEAR SLIDES
+    public DcMotor ySlide, xSlide;
+
+    // REV Sensors
+    public BNO055IMU imu;
+    public Orientation theta;
+    public double temp;
+    public DistanceSensor range;
+
+    // VUFORIA
+    public final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;//use back camera
+    public final String VUFORIA_KEY = "AUBZ9tz/////AAABmcD+zzeDb02lt3WkDlYB/vZi/6YK4SHRNFLfBrST0dK16ImQjN+KG3vN2MFs/EAcJydoBmOH0nbqY9lxbtNPKSpxOMtnrDwQmZWds+Z74kjqSmMCKDGT1a3LIIOF+6jbEWgITgiBRlY+gGD/b8m6Ck3jCoe+CyVhXv1zyOKtcjlWLBHGhBSQ/xJbHGdkDsah2WkFJGUaaXRWLHqnYyit/FKJzbQ5UjyFUraZZoTTXjgjfRvM7/YcwwDf+CXYCYObPKANY0g/y9YaArDYS2bgDL/5Fh9E3SUhAv8CpNprIA2T8GCZhMDzFJYme87N1+1DspG7+2AsEyabBSKhst11vV6Z8tWRcHCfspKeEO/LtO/B";
+    public VuforiaLocalizer vuforia = null;
+
+    public Image rgbImage = null;
+    public VuforiaLocalizer.CloseableFrame closeableFrame = null;
+
+    // PID
+    public PIDController pidDrive = new PIDController(2, 0, 0);
+    public PIDController pidStrafe = new PIDController(2, 0, 0);
+    public PIDController pidRotate = new PIDController(2, 0, 0);
+    public PIDController pidDiagonal = new PIDController(2, 0, 0);
+    public ElapsedTime pidTimer;
+
+    // CONTROL CONSTANTS ---------------------------------------------------------------------------
+
+    // TOGGLES
+    public int a = 0, b = 0, x = 0, y = 0, up = 0, down = 0, left = 0, right = 0, rBumper = 0;
+
+    // GENERAL CONTROL
+    public final double ON = 1;
+    public final double OFF = 0;
+    public final double REVERSE = -1;
+
+    // DRIVE CONTROL
+    public double slow;
+    public double flpower, frpower, blpower, brpower;
+
+    public final double WHEEL_DIAMETER_INCHES = 4;
+    public final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
+    public final double DRIVE_TICKS_PER_MOTOR_REV = 537.6; // NeveRest Orbital 20
+    public final double DRIVE_GEAR_REDUCTION = 1;
+    public final double DRIVE_TICKS_PER_INCH = ((DRIVE_TICKS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_INCHES);
+
+    public final double ROBOT_RADIUS_INCHES  = 9.933;
+    public final double ROBOT_CIRCUMFERENCE_INCHES  = 2 * ROBOT_RADIUS_INCHES * Math.PI;
+    public final double DRIVE_INCHES_PER_DEGREE  = ROBOT_CIRCUMFERENCE_INCHES / 360;
+    // public final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
+
+    // Y SLIDES
+    public int yTargetInches = 0;
+
+    public final double MAX_LEVEL = 6;
+    public final double Y_MIN_EXTENSION = GRND;
+    public final double Y_MAX_EXTENSION = PLTFM + MAX_LEVEL * STONE_HEIGHT;
+
+    public final double Y_SPOOL_DIAMETER_INCHES = 50;
+    public final double Y_SPOOL_CIRCUMFERENCE_INCHES = Y_SPOOL_DIAMETER_INCHES * Math.PI;
+    public final double Y_TICKS_PER_MOTOR_REV = 1120; // NeveRest Classic 40
+    public final double Y_GEAR_REDUCTION = 1;
+    public final double Y_TICKS_PER_INCH = ((Y_TICKS_PER_MOTOR_REV * Y_GEAR_REDUCTION) / Y_SPOOL_CIRCUMFERENCE_INCHES);
+
+    // X SLIDES
+    public final double X_MIN_EXTENSION = 0;
+    public final double X_MAX_EXTENSION = 0; // temp
+
+    public final double X_SPOOL_DIAMETER_INCHES = 50;
+    public final double X_SPOOL_CIRCUMFERENCE_INCHES = X_SPOOL_DIAMETER_INCHES * Math.PI;
+    public final double x_TICKS_PER_MOTOR_REV = 560; // NeveRest Classic 20
+    public final double X_GEAR_REDUCTION = 1;
+    public final double X_TICKS_PER_INCH = ((x_TICKS_PER_MOTOR_REV * X_GEAR_REDUCTION) / X_SPOOL_CIRCUMFERENCE_INCHES);
+
+    // CLAMP
+    public final double CLAMP_DOWN = 0.875;
+    public final double CLAMP_UP = 0;
+    public boolean isLoaded;
+
+    // INTAKE
+    public final double HOOK_UP = 0.15;
+    public final double HOOK_DOWN = 0.775;
+
+    // METHODS -------------------------------------------------------------------------------------
 
     // Initialize robot
     public void initialize() {
 
         //DEVICE INITIALIZATION
-
-        // RUNTIME
-        runtime.startTime();
 
         // DRIVETRAIN
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
@@ -76,6 +178,12 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         imu.initialize(imuParameters);
         range = hardwareMap.get(DistanceSensor.class, "range");
 
+        // PID -------------------------------------------------------------------------------------
+        pidTimer = new ElapsedTime();
+    }
+
+    public void initializeVuforia() {
+
         // VUFORIA
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -90,15 +198,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         stoneTarget.setName("Skystone Target");
 
         targetsSkyStone.activate();
-
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); // Enables RGB565 format for image
-        vuforia.setFrameQueueCapacity(1); // Store only one frame at a time
-
-        // PID ControlConstants
-        pidRotate = new PIDController(1,1,1);
-        pidDrive = new PIDController(0,0,0);
-        pidXSlides = new PIDController(0,0,0);
-        pidYSlides = new PIDController(0,0,0);
     }
 
     // Extend X-Slides and place stone
@@ -110,7 +209,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             // Place stone
             yRetract(1,PLTFM);
             openClamp();
-            yExtend(1,PLTFM);
         }
     }
 
@@ -123,8 +221,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         intake();
     }
 
-    // DRIVETRAIN ----------------------------------------------------------------------------------
-    public void forward(double power, double inches) {
+    // DRIVETRAIN
+    public void forward(double inches) {
 
         double target = inches * DRIVE_TICKS_PER_INCH;
 
@@ -136,15 +234,20 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     1, 1);
             setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
+            pidDrive.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidDrive.isFinished) {
+
+                pidDrive.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidDrive.correction);
+            }
 
             stopDrive();
             resetDriveMode();
         }
     }
 
-    public void backward(double power, double inches) {
+    public void backward(double inches) {
 
         double target = inches * DRIVE_TICKS_PER_INCH;
 
@@ -156,15 +259,20 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     -1, -1);
             setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
+            pidDrive.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidDrive.isFinished) {
+
+                pidDrive.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidDrive.correction);
+            }
 
             stopDrive();
             resetDriveMode();
         }
     }
 
-    public void strafeLeft(double power, double inches) {
+    public void strafeLeft(double inches) {
 
         double target = inches * DRIVE_TICKS_PER_INCH;
 
@@ -176,15 +284,20 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     1, -1);
             setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
+            pidStrafe.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidStrafe.isFinished) {
+
+                pidStrafe.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidStrafe.correction);
+            }
 
             stopDrive();
             resetDriveMode();
         }
     }
 
-    public void strafeRight(double power, double inches) {
+    public void strafeRight(double inches) {
 
         double target = inches * DRIVE_TICKS_PER_INCH;
 
@@ -196,8 +309,13 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     -1, 1);
             setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
+            pidStrafe.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidStrafe.isFinished) {
+
+                pidStrafe.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidStrafe.correction);
+            }
 
             stopDrive();
             resetDriveMode();
@@ -215,75 +333,127 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                 if (quadrant == 1) {
                     frontLeft.setTargetPosition((int)target);
                     backRight.setTargetPosition((int)target);
+
+                    frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    pidDiagonal.resetPID();
+
+                    while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
+
+                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                        frontLeft.setPower(pidDiagonal.correction);
+                        backRight.setPower(pidDiagonal.correction);
+                    }
                 }
 
                 else if (quadrant == 2) {
                     backLeft.setTargetPosition((int)target);
                     frontRight.setTargetPosition((int)target);
+
+                    frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    pidDiagonal.resetPID();
+
+                    while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
+
+                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                        frontLeft.setPower(pidDiagonal.correction);
+                        backRight.setPower(pidDiagonal.correction);
+                    }
                 }
 
                 else if (quadrant == 3) {
                     frontLeft.setTargetPosition((int)(-target));
                     backRight.setTargetPosition((int) (-target));
+
+                    frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    pidDiagonal.resetPID();
+
+                    while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
+
+                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                        frontLeft.setPower(pidDiagonal.correction);
+                        backRight.setPower(pidDiagonal.correction);
+                    }
                 }
 
                 else if (quadrant == 4) {
                     backLeft.setTargetPosition((int) (-target));
                     frontRight.setTargetPosition((int) (-target));
+
+                    frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    pidDiagonal.resetPID();
+
+                    while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
+
+                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                        frontLeft.setPower(pidDiagonal.correction);
+                        backRight.setPower(pidDiagonal.correction);
+                    }
                 }
 
-            setDriveMode();
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
-
             stopDrive();
             resetDriveMode();
-
         }
     }
 
-    public void rotateLeft(double power, double angle) {
+    public void rotateLeft(double angle) {
 
         double target = angle * DRIVE_TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
 
         if (opModeIsActive()) {
 
             resetDriveEncoders();
-            setRotateTarget(target,
-                    -1, 1,
-                    -1, 1);
-            setDriveMode();
-
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
-
-            stopDrive();
-            resetDriveMode();
-        }
-    }
-
-    public void rotateRight(double power, double angle) {
-
-        double target = angle * DRIVE_TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
-
-        if (opModeIsActive()) {
-
-            resetDriveEncoders();
-            setRotateTarget(target,
+            setDriveTarget(target,
                     1, -1,
                     1, -1);
             setDriveMode();
 
-            while (opModeIsActive() && frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy())
-                setDrivePower(power);
+            pidRotate.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidRotate.isFinished) {
+
+                pidRotate.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidRotate.correction);
+            }
 
             stopDrive();
             resetDriveMode();
         }
     }
 
-    // HOOK ----------------------------------------------------------------------------------------
+    public void rotateRight(double angle) {
+
+        double target = angle * DRIVE_TICKS_PER_INCH * DRIVE_INCHES_PER_DEGREE;
+
+        if (opModeIsActive()) {
+
+            resetDriveEncoders();
+            setDriveTarget(target,
+                    -1, 1,
+                    -1, 1);
+            setDriveMode();
+
+            pidRotate.resetPID();
+
+            while (opModeIsActive() && driveIsBusy() && !pidRotate.isFinished) {
+
+                pidRotate.performPID(getDrivePosition(), target, 1, pidTimer);
+                setDrivePower(pidRotate.correction);
+            }
+
+            stopDrive();
+            resetDriveMode();
+        }
+    }
+
+    // HOOK
     public void hookDown() {
 
         hookL.setPosition(HOOK_DOWN);
@@ -296,7 +466,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         hookR.setPosition(HOOK_UP);
     }
 
-    // Y SLIDES ------------------------------------------------------------------------------------
+    // Y SLIDES
 
     public void yExtend() {
 
@@ -327,7 +497,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         runEncoder(ySlide, power, ticks);
     }
 
-    // X SLIDES ------------------------------------------------------------------------------------
+    // X SLIDES
+
     public void xExtend() {
 
         xSlide.setPower(ON);
@@ -357,7 +528,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         runEncoder(xSlide, power, ticks);
     }
 
-    // INTAKE --------------------------------------------------------------------------------------
+    // INTAKE
     public void intake() {
 
         leftIntake.setPower(ON);
@@ -377,7 +548,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     }
 
 
-    // CLAMP ---------------------------------------------------------------------------------------
+    // CLAMP
     public void closeClamp() {
 
         clamp.setPosition(CLAMP_DOWN);
@@ -388,10 +559,13 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         clamp.setPosition(CLAMP_UP);
     }
 
-    // VUFORIA -------------------------------------------------------------------------------------
+    // VUFORIA
 
     // INCOMPLETE
-    public int vuforiaScan(boolean saveBitmap) {
+    public void vuforiaScan(boolean saveBitmap) {
+
+        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); // Enables RGB565 format for image
+        vuforia.setFrameQueueCapacity(1); // Store only one frame at a time
 
         // Capture Vuforia Frame
         while (rgbImage == null) {
@@ -435,7 +609,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             if (saveBitmap) {
                 try {
 
-                    File file = new File(path, "Bitmap");
+                    File file = new File(path, "Bitmap.png");
                     out = new FileOutputStream(file);
                     quarry.compress(Bitmap.CompressFormat.PNG, 100, out);
 
@@ -477,7 +651,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             telemetry.update();
             sleep(3000);
 
-            /*
             // Create cropped bitmap to show only stones
             quarry = createBitmap(quarry, cropStartX, cropStartY, cropWidth, cropHeight);
 
@@ -485,7 +658,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             if (saveBitmap) {
                 try {
 
-                    File file = new File(path, "CroppedBitmap");
+                    File file = new File(path, "CroppedBitmap.png");
                     out = new FileOutputStream(file);
                     quarry.compress(Bitmap.CompressFormat.PNG, 100, out);
 
@@ -504,7 +677,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
                     }
                 }
             }
-             */
 
             // Compress bitmap to reduce scan time
             quarry = createScaledBitmap(quarry, 110, 20, true);
@@ -544,10 +716,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             telemetry.addLine("Max Green: " + g);
             telemetry.addLine("Max Blue: " + b);
             telemetry.update();
-            sleep(20000);
         }
-
-        return position = 999;
     }
 
     // UTILITY METHODS -----------------------------------------------------------------------------
@@ -620,6 +789,25 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
+    public boolean driveIsBusy() {
+
+        if (frontLeft.isBusy() && backLeft.isBusy() && frontRight.isBusy() && backRight.isBusy()) {
+
+            return true;
+        }
+
+        else
+            return false;
+    }
+
+    public double getDrivePosition() {
+
+        double total = frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+                + backLeft.getCurrentPosition() + backRight.getCurrentPosition();
+        double average = total/4;
+        return average;
+    }
+
     public void setDriveMode() {
         frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -657,13 +845,5 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         backLeft.setTargetPosition((int) (bl * dist));
         frontRight.setTargetPosition((int) (fr * dist));
         backRight.setTargetPosition((int) (br * dist));
-    }
-
-    public void setRotateTarget(double deg, double fl, double fr, double bl, double br) {
-
-        frontLeft.setTargetPosition((int) (fl * deg));
-        backLeft.setTargetPosition((int) (bl * deg));
-        frontRight.setTargetPosition((int) (fr * deg));
-        backRight.setTargetPosition((int) (br * deg));
     }
 }
