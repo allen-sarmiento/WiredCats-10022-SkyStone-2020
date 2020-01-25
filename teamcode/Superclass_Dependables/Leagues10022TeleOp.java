@@ -17,11 +17,38 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
 
         while (opModeIsActive()) {
 
+            // TELEMETRY ---------------------------------------------------------------------------
+            // Display control info for the driver
+
+            telemetry.addLine("STACK AND LEVELLING: ");
+            telemetry.addLine("Stack State: " + a);
+            telemetry.addLine("Y-Target: " + yTargetInches);
+            telemetry.addLine();
+
+            telemetry.addLine("INTAKE: ");
+            telemetry.addLine("Intake Loaded: " + intakeIsLoaded);
+            telemetry.addLine("Intake Power: " + intakePower);
+            telemetry.addLine();
+
+            telemetry.addLine("CLAW AND HOOK:");
+            telemetry.addLine("Claw Activated: " + clawIsActivated);
+            telemetry.addLine("Hook Activated " + hookIsActivated);
+            telemetry.addLine();
+
+            telemetry.addLine("LINEAR SLIDES:");
+            telemetry.addLine("X-Slide Position: " + getXPosInches());
+            telemetry.addLine("Y-Slide Position: " + getYPosInches());
+            telemetry.addLine();
+
+            telemetry.addLine("IMU:");
+            telemetry.addLine("Global Angle: " + getHeading());
+            telemetry.update();
+
             // DRIVETRAIN --------------------------------------------------------------------------
 
             double lefty = -gamepad1.left_stick_y;
-            float leftx = gamepad1.left_stick_x;
-            float rightx = gamepad1.right_stick_x;
+            double leftx = gamepad1.left_stick_x;
+            double rightx = gamepad1.right_stick_x;
 
             // Joystick deadzones prevents unintentional drivetrain movements
             if (Math.abs(lefty) <= 0.2)
@@ -39,11 +66,6 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
             blpower = Math.pow((lefty - leftx + rightx), 3);
             frpower = Math.pow((lefty - leftx - rightx), 3);
             brpower = Math.pow((lefty + leftx - rightx), 3);
-
-            frontLeft.setPower(flpower);
-            frontRight.setPower(frpower);
-            backLeft.setPower(blpower);
-            backRight.setPower(brpower);
 
             // Motor Power is halved while the right trigger is held down to allow for more
             // precise robot control
@@ -71,15 +93,20 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
             frontRight.setPower(frpower);
             backRight.setPower(brpower);
 
-            // DRIVE -------------------------------------------------------------------------------
+            telemetry.addLine("DRIVE");
+            telemetry.update();
+
+            // ROTATE ------------------------------------------------------------------------------
             if (gamepad1.y && y == 0)
                 y = 1;
 
-            else if (!gamepad1.dpad_up && y == 1) {
-
+            else if (!gamepad1.y && y == 1) {
                 rotateRight(180);
                 y = 0;
             }
+
+            telemetry.addLine("DRIVE");
+            telemetry.update();
 
             // HOOK --------------------------------------------------------------------------------
             if (gamepad1.b && b == 0)
@@ -161,16 +188,15 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
                 a = 1;
 
             else if (!gamepad1.a && a == 1) {
-
                 xExtend(1, X_MAX_EXTENSION - getXPosInches());
                 a = 2;
             }
 
-            else if (gamepad1.b && a == 2) {
-
-                xRetract(1, X_MAX_EXTENSION - getXPosInches());
+            else if (gamepad1.b && a == 2)
                 a = 0;
-            }
+
+            else if (!gamepad1.b && a == 0)
+                xRetract(1, X_MAX_EXTENSION - getXPosInches());
 
             else if (gamepad1.a && a == 2)
                 a = 3;
@@ -232,11 +258,11 @@ public class Leagues10022TeleOp extends Skystone10022Superclass {
 
             /*
             if(range.getDistance(DistanceUnit.INCH) < 0.5)
-                isLoaded = true;
+                intakeIsLoaded = true;
             else
-                isLoaded = false;
+                intakeIsLoaded = false;
 
-            if (isLoaded) {
+            if (intakeIsLoaded) {
 
                 closeClaw();
                 intakeOff();

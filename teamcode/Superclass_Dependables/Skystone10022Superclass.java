@@ -16,6 +16,9 @@ import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -33,7 +36,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     // UNIVERSAL VARIABLES -------------------------------------------------------------------------
     public final double GRND = 0;
-    public final double PLTFM = 0; // temp
+    public final double PLTFM = 3; // temp
 
     public final double STONE_HEIGHT = 5;
     public final double STONE_LENGTH = 8;
@@ -107,7 +110,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     // Y SLIDES
     public int yTargetInches = 0;
 
-    public final double MAX_LEVEL = 6;
+    public final double MAX_LEVEL = 8;
     public final double Y_MIN_EXTENSION = GRND;
     public final double Y_MAX_EXTENSION = PLTFM + MAX_LEVEL * STONE_HEIGHT;
 
@@ -119,7 +122,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     // X SLIDES
     public final double X_MIN_EXTENSION = 0;
-    public final double X_MAX_EXTENSION = 0; // temp
+    public final double X_MAX_EXTENSION = STONE_LENGTH + 6; // temp
 
     public final double X_SPOOL_DIAMETER_INCHES = 50;
     public final double X_SPOOL_CIRCUMFERENCE_INCHES = X_SPOOL_DIAMETER_INCHES * Math.PI;
@@ -130,11 +133,16 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     // CLAW
     public final double CLAW_DOWN = 0;
     public final double CLAW_UP = 1;
-    public boolean isLoaded;
 
-    // INTAKE
+    // HOOK
     public final double HOOK_UP = 0.15;
     public final double HOOK_DOWN = 0.775;
+
+    // TELEMTERY
+    public boolean intakeIsLoaded;
+    public boolean hookIsActivated;
+    public boolean clawIsActivated;
+    public double intakePower;
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -142,6 +150,9 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public void initialize() {
 
         //DEVICE INITIALIZATION
+
+        telemetry.addLine("Initializing...");
+        telemetry.update();
 
         // DRIVETRAIN
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
@@ -155,6 +166,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         // CLAW
         clawL = hardwareMap.servo.get("clawL");
         clawR = hardwareMap.servo.get("clawR");
+        clawR.setDirection(Servo.Direction.REVERSE);
 
         // INTAKE
         leftIntake = hardwareMap.dcMotor.get("leftIntake");
@@ -459,12 +471,14 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         hookL.setPosition(HOOK_DOWN);
         hookR.setPosition(HOOK_DOWN);
+        hookIsActivated = true;
     }
 
     public void hookUp() {
 
         hookL.setPosition(HOOK_UP);
         hookR.setPosition(HOOK_UP);
+        hookIsActivated = false;
     }
 
     // Y SLIDES
@@ -534,18 +548,21 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         leftIntake.setPower(ON);
         rightIntake.setPower(ON);
+        intakePower = 1;
     }
 
     public void outtake() {
 
         leftIntake.setPower(REVERSE);
         rightIntake.setPower(REVERSE);
+        intakePower = -1;
     }
 
     public void intakeOff() {
 
         leftIntake.setPower(OFF);
         rightIntake.setPower(OFF);
+        intakePower = 0;
     }
 
 
@@ -554,12 +571,14 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         clawL.setPosition(CLAW_DOWN);
         clawR.setPosition(CLAW_DOWN);
+        clawIsActivated = true;
     }
 
     public void openClaw() {
 
         clawL.setPosition(CLAW_UP);
         clawR.setPosition(CLAW_UP);
+        clawIsActivated = false;
     }
 
     // VUFORIA
@@ -848,5 +867,11 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         backLeft.setTargetPosition((int) (bl * dist));
         frontRight.setTargetPosition((int) (fr * dist));
         backRight.setTargetPosition((int) (br * dist));
+    }
+
+    public double getHeading() {
+
+        theta = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
+        return Math.toDegrees(theta.firstAngle);
     }
 }
