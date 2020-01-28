@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.Superclass_Dependables;
+package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Environment;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -16,14 +17,15 @@ import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.teamcode.Superclass_Dependables.ReferenceClasses.PIDController;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,8 +43,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public final double STONE_HEIGHT = 5;
     public final double STONE_LENGTH = 8;
     public final double STONE_WIDTH = 4;
-
-    public int position = -1;
+    public final double STACK_CLEARANCE = 1; // temp
 
     // ROBOT OBJECTS -------------------------------------------------------------------------------
 
@@ -85,12 +86,13 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     // CONTROL CONSTANTS ---------------------------------------------------------------------------
 
     // TOGGLES
-    public int a = 0, b = 0, x = 0, y = 0, up = 0, down = 0, left = 0, right = 0, rBumper = 0;
+    public int a = 0, b = 0, x = 0, y = 0, up = 0, down = 0, left = 0, right = 0, rBumper = 0, back = 0;
 
     // GENERAL CONTROL
     public final double ON = 1;
     public final double OFF = 0;
     public final double REVERSE = -1;
+    public int skyStonePos = -1;
 
     // DRIVE CONTROL
     public double slow;
@@ -104,39 +106,42 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public final double ROBOT_RADIUS_INCHES  = 9.933;
     public final double ROBOT_CIRCUMFERENCE_INCHES  = 2 * ROBOT_RADIUS_INCHES * Math.PI;
-    public final double DRIVE_INCHES_PER_DEGREE  = ROBOT_CIRCUMFERENCE_INCHES / 360;
+    public final double DRIVE_INCHES_PER_DEGREE  = ROBOT_CIRCUMFERENCE_INCHES / 360; // temp
     // public final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
 
     // Y SLIDES
-    public int yTargetInches = 0;
+    public double yTargetInches = 0;
+    public int yLevel = 0;
 
     public final double MAX_LEVEL = 8;
     public final double Y_MIN_EXTENSION = GRND;
-    public final double Y_MAX_EXTENSION = PLTFM + MAX_LEVEL * STONE_HEIGHT;
+    public final double Y_MAX_EXTENSION = PLTFM + STACK_CLEARANCE + MAX_LEVEL * STONE_HEIGHT;
 
-    public final double Y_SPOOL_DIAMETER_INCHES = 50;
+    public final double Y_SPOOL_DIAMETER_INCHES = 2;
     public final double Y_SPOOL_CIRCUMFERENCE_INCHES = Y_SPOOL_DIAMETER_INCHES * Math.PI;
-    public final double Y_TICKS_PER_MOTOR_REV = 1120; // NeveRest Classic 40
+    public final double Y_TICKS_PER_MOTOR_REV = 1680; // NeveRest Classic 60
     public final double Y_GEAR_REDUCTION = 1;
     public final double Y_TICKS_PER_INCH = ((Y_TICKS_PER_MOTOR_REV * Y_GEAR_REDUCTION) / Y_SPOOL_CIRCUMFERENCE_INCHES);
 
     // X SLIDES
     public final double X_MIN_EXTENSION = 0;
-    public final double X_MAX_EXTENSION = STONE_LENGTH + 6; // temp
+    public final double X_MAX_EXTENSION = 6.5; // temp
 
-    public final double X_SPOOL_DIAMETER_INCHES = 50;
+    public final double X_SPOOL_DIAMETER_INCHES = 2;
     public final double X_SPOOL_CIRCUMFERENCE_INCHES = X_SPOOL_DIAMETER_INCHES * Math.PI;
-    public final double x_TICKS_PER_MOTOR_REV = 560; // NeveRest Classic 20
+    public final double X_TICKS_PER_MOTOR_REV = 560; // NeveRest Classic 20
     public final double X_GEAR_REDUCTION = 1;
-    public final double X_TICKS_PER_INCH = ((x_TICKS_PER_MOTOR_REV * X_GEAR_REDUCTION) / X_SPOOL_CIRCUMFERENCE_INCHES);
+    public final double X_TICKS_PER_INCH = (((X_TICKS_PER_MOTOR_REV * X_GEAR_REDUCTION) / X_SPOOL_CIRCUMFERENCE_INCHES)*(2.5/1.5));
+
+    public String stackState = "";
 
     // CLAW
-    public final double CLAW_DOWN = 0;
+    public final double CLAW_DOWN = 0.6;
     public final double CLAW_UP = 1;
 
     // HOOK
-    public final double HOOK_UP = 0.15;
-    public final double HOOK_DOWN = 0.775;
+    public final double HOOK_UP = 0;
+    public final double HOOK_DOWN = 0.95;
 
     // TELEMTERY
     public boolean intakeIsLoaded;
@@ -151,7 +156,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         //DEVICE INITIALIZATION
 
-        telemetry.addLine("Initializing...");
+        telemetry.addLine("Initializing Robot...");
         telemetry.update();
 
         // DRIVETRAIN
@@ -159,7 +164,6 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
         backRight = hardwareMap.dcMotor.get("backRight");
-
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
@@ -167,22 +171,27 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         clawL = hardwareMap.servo.get("clawL");
         clawR = hardwareMap.servo.get("clawR");
         clawR.setDirection(Servo.Direction.REVERSE);
+        openClaw();
 
         // INTAKE
         leftIntake = hardwareMap.dcMotor.get("leftIntake");
         rightIntake = hardwareMap.dcMotor.get("rightIntake");
         leftIntake.setDirection(DcMotor.Direction.REVERSE);
+        intakeOff();
 
         // HOOK
         hookL = hardwareMap.servo.get("setHookL");
         hookR = hardwareMap.servo.get("setHookR");
-        hookR.setDirection(Servo.Direction.REVERSE);
+        hookL.setDirection(Servo.Direction.REVERSE);
+        hookDown();
 
         // LINEAR SLIDES
         xSlide = hardwareMap.dcMotor.get("xSlide");
         ySlide = hardwareMap.dcMotor.get("ySlide");
         xSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         ySlide.setDirection(DcMotorSimple.Direction.REVERSE);
+        resetSlideEncoders();
+        resetSlideMode();
 
         // REV Sensors
         BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
@@ -193,9 +202,15 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         // PID -------------------------------------------------------------------------------------
         pidTimer = new ElapsedTime();
+
+        telemetry.addLine("Robot Initialized");
+        telemetry.update();
     }
 
     public void initializeVuforia() {
+
+        telemetry.addLine("Initializing Vuforia...");
+        telemetry.update();
 
         // VUFORIA
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -211,6 +226,11 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         stoneTarget.setName("Skystone Target");
 
         targetsSkyStone.activate();
+
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
+
+        telemetry.addLine("Vuforia Initialized");
+        telemetry.update();
     }
 
     // Extend X-Slides and place stone
@@ -220,7 +240,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         if (!xSlide.isBusy()) {
 
             // Place stone
-            yRetract(1,PLTFM);
+            yExtend(1,-STACK_CLEARANCE);
             openClaw();
         }
     }
@@ -229,8 +249,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public void resetRobot() {
 
         openClaw();
-        xRetract(1, getXPosInches() - X_MIN_EXTENSION);
-        yRetract(1, getYPosInches() - Y_MIN_EXTENSION);
+        xExtend(1, -(getXPosInches() - X_MIN_EXTENSION));
+        yExtend(1, -(getYPosInches() - Y_MIN_EXTENSION));
         intake();
     }
 
@@ -343,73 +363,73 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
             resetDriveEncoders();
 
-                if (quadrant == 1) {
-                    frontLeft.setTargetPosition((int)target);
-                    backRight.setTargetPosition((int)target);
+            if (quadrant == 1) {
+                frontLeft.setTargetPosition((int)target);
+                backRight.setTargetPosition((int)target);
 
-                    frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    pidDiagonal.resetPID();
+                pidDiagonal.resetPID();
 
-                    while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
+                while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
 
-                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
-                        frontLeft.setPower(pidDiagonal.correction);
-                        backRight.setPower(pidDiagonal.correction);
-                    }
+                    pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                    frontLeft.setPower(pidDiagonal.correction);
+                    backRight.setPower(pidDiagonal.correction);
                 }
+            }
 
-                else if (quadrant == 2) {
-                    backLeft.setTargetPosition((int)target);
-                    frontRight.setTargetPosition((int)target);
+            else if (quadrant == 2) {
+                backLeft.setTargetPosition((int)target);
+                frontRight.setTargetPosition((int)target);
 
-                    frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    pidDiagonal.resetPID();
+                pidDiagonal.resetPID();
 
-                    while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
+                while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
 
-                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
-                        frontLeft.setPower(pidDiagonal.correction);
-                        backRight.setPower(pidDiagonal.correction);
-                    }
+                    pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                    frontLeft.setPower(pidDiagonal.correction);
+                    backRight.setPower(pidDiagonal.correction);
                 }
+            }
 
-                else if (quadrant == 3) {
-                    frontLeft.setTargetPosition((int)(-target));
-                    backRight.setTargetPosition((int) (-target));
+            else if (quadrant == 3) {
+                frontLeft.setTargetPosition((int)(-target));
+                backRight.setTargetPosition((int) (-target));
 
-                    frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    pidDiagonal.resetPID();
+                pidDiagonal.resetPID();
 
-                    while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
+                while (opModeIsActive() && frontLeft.isBusy() && backRight.isBusy() && !pidDiagonal.isFinished) {
 
-                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
-                        frontLeft.setPower(pidDiagonal.correction);
-                        backRight.setPower(pidDiagonal.correction);
-                    }
+                    pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                    frontLeft.setPower(pidDiagonal.correction);
+                    backRight.setPower(pidDiagonal.correction);
                 }
+            }
 
-                else if (quadrant == 4) {
-                    backLeft.setTargetPosition((int) (-target));
-                    frontRight.setTargetPosition((int) (-target));
+            else if (quadrant == 4) {
+                backLeft.setTargetPosition((int) (-target));
+                frontRight.setTargetPosition((int) (-target));
 
-                    frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    pidDiagonal.resetPID();
+                pidDiagonal.resetPID();
 
-                    while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
+                while (opModeIsActive() && (frontRight.isBusy() && backLeft.isBusy())) {
 
-                        pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
-                        frontLeft.setPower(pidDiagonal.correction);
-                        backRight.setPower(pidDiagonal.correction);
-                    }
+                    pidDiagonal.performPID(getDrivePosition(), target, 1, pidTimer);
+                    frontLeft.setPower(pidDiagonal.correction);
+                    backRight.setPower(pidDiagonal.correction);
                 }
+            }
 
             stopDrive();
             resetDriveMode();
@@ -500,15 +520,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void yExtend(double power, double inches) {
 
-        checkYTarget(inches);
-        double ticks = inches * Y_TICKS_PER_INCH; // Convert to ticks
-        runEncoder(ySlide, power, ticks);
-    }
-
-    public void yRetract(double power, double inches) {
-
-        checkYTarget(-inches); // Negative distance (retract)
-        double ticks = inches * Y_TICKS_PER_INCH; // Convert to ticks
+        double ticks = checkYTarget(inches) * Y_TICKS_PER_INCH; // Convert to ticks
         runEncoder(ySlide, power, ticks);
     }
 
@@ -531,15 +543,7 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     public void xExtend(double power, double inches) {
 
-        checkXTarget(inches);
-        double ticks = inches * X_TICKS_PER_INCH; // Convert to ticks
-        runEncoder(xSlide, power, ticks);
-    }
-
-    public void xRetract(double power, double inches) {
-
-        checkYTarget(-inches); // Negative distance (Retract)
-        double ticks = inches * X_TICKS_PER_INCH; // Convert to ticks
+        double ticks = checkXTarget(inches) * X_TICKS_PER_INCH; // Convert to ticks
         runEncoder(xSlide, power, ticks);
     }
 
@@ -585,6 +589,8 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
     // INCOMPLETE
     public void vuforiaScan(boolean saveBitmap) {
+
+        // note: height and width are reversed
 
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true); // Enables RGB565 format for image
         vuforia.setFrameQueueCapacity(1); // Store only one frame at a time
@@ -658,10 +664,10 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             int cropWidth;
             int cropHeight;
 
-            cropStartX = 0;
+            cropStartX = (int)(0.3125 * quarry.getWidth());
             cropStartY = 0;
-            cropWidth = (int)(0.5 * quarry.getWidth());
-            cropHeight = (int)(0.5 * quarry.getHeight());
+            cropWidth = (int)(0.06 * quarry.getWidth());    //temp
+            cropHeight = (int)(1.0 * quarry.getHeight());
 
             telemetry.addLine("VuforiaScan\n"
                     + "Crop StartX: " + cropStartX + "\n"
@@ -703,40 +709,61 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
             // Compress bitmap to reduce scan time
             quarry = createScaledBitmap(quarry, 110, 20, true);
 
-            int height, width, pixel;
+            int height, width, pixel, tempColorSum;
             int bitmapWidth = quarry.getWidth(), bitmapHeight = quarry.getHeight();
-            int r = -1, g = -1, b = -1;
+            int colorSum = 1000;
+            int row;
+            width = (int)(0.3425 * quarry.getWidth());      // temp ish -- does this need to be adjusted?
+            double factor = 1.0 / 12;
+
+            // check each of the 3 stones
+            for (int currentStone = 4; currentStone <= 6; currentStone++) {
+
+                height = (int) (quarry.getHeight() * factor);    // temp
+
+                // 'pixel' uses a constant width and a variable height
+                pixel = quarry.getPixel(width, height);
+
+                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
+
+                telemetry.addLine("factor#: " + factor);
+                telemetry.addLine("quarry.getHeight(): " + quarry.getHeight());
+                telemetry.addLine("height: " + height);
+                telemetry.addLine("width: " + width);
+                /*telemetry.addLine("red: " + Color.green(pixel));
+                telemetry.addLine("green: " + Color.red(pixel));
+                telemetry.addLine("blue: " + Color.blue(pixel));*/
+
+                telemetry.addLine();
+                telemetry.addLine("stone #: " + currentStone);
+                /*
+                telemetry.addLine("temp color sum: " + tempColorSum);
+                telemetry.addLine("min color sum: " + colorSum);
+                telemetry.addLine("skystone: " + skyStonePos); */
+                telemetry.update();
+                sleep(2000);
+
+                if (tempColorSum < colorSum) {
+
+                    colorSum = tempColorSum;
+                    skyStonePos = currentStone;
+                }
+
+                factor += 1.0 / 3;
+            }
+
+            // right now,
+            // this method ONLY WORKS IF correct starting posiiton on blue side
+            // easy to correct I just haven't done it yet
 
             // From experimentation,
             // RGB of skystone-black is approximately(120, 120, 120)
             // RGB of stone-yellow is approximately (230, 200, 120)
             // Sole RGB of individual pixels not very reliable in determining skystone positiion
 
-            // 1. Find the RGB sum of 9 pixels from each stone; lowest sum > skystone
-            // 2. Experiment with HSV Values
+            telemetry.addLine("color sum: " + colorSum);
+            telemetry.addLine("skystone: " + skyStonePos);
 
-
-            // Traverse through each row
-            for (height = 0; height < bitmapHeight; height++) {
-
-                for (width = 0; width < bitmapWidth; width++) {
-
-                    pixel = quarry.getPixel(width, height);
-
-                    if (Color.red(pixel) > r)
-                        r = Color.red(pixel);
-
-                    if (Color.green(pixel) > g)
-                        g = Color.green(pixel);
-
-                    if (Color.blue(pixel) > b)
-                        b = Color.blue(pixel);
-                }
-            }
-
-            telemetry.addLine("Max Red: " + r);
-            telemetry.addLine("Max Green: " + g);
-            telemetry.addLine("Max Blue: " + b);
             telemetry.update();
         }
     }
@@ -751,8 +778,10 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         m_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (m_motor.isBusy())
+        while (m_motor.isBusy()) {
+            teleOp();
             m_motor.setPower(power);
+        }
 
         // Stop all motion;
         m_motor.setPower(0);
@@ -761,36 +790,30 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
         m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void checkXTarget(double inches) {
+    public double checkXTarget(double inches) {
 
         // Find resulting poisiton after adding target position to current position (inches)
-        double result = xSlide.getCurrentPosition() / X_TICKS_PER_INCH + inches;
+        double result = getXPosInches() + inches;
 
         // Normalize if result is result is greater than max extension
-        if (result > X_MAX_EXTENSION)
+        if (result > X_MAX_EXTENSION || result < X_MIN_EXTENSION)
             // Set correct distance to max extension
-            inches = (X_MAX_EXTENSION - xSlide.getCurrentPosition() / X_TICKS_PER_INCH);
+            inches = (X_MAX_EXTENSION - getXPosInches());
 
-        // Normalize if result is result is less than min extension
-        else if (result < X_MIN_EXTENSION)
-            // Set correct distance to min extension
-            inches = (X_MIN_EXTENSION - xSlide.getCurrentPosition() / X_TICKS_PER_INCH);
+        return inches;
     }
 
-    public void checkYTarget(double inches) {
+    public double checkYTarget(double inches) {
 
-        // Find resulting poisiton after adding target position to current position (inches)
-        double result = ySlide.getCurrentPosition() / Y_TICKS_PER_INCH + inches;
+        // Find resulting position after adding target position to current position (inches)
+        double result = getYPosInches() + inches;
 
-        // Normalize if result is result is greater than max extension
-        if (result > Y_MAX_EXTENSION)
-            // Set correct distance to max extension
-            inches = (Y_MAX_EXTENSION - ySlide.getCurrentPosition() / Y_TICKS_PER_INCH);
+        // Normalize if result is result is greater than max extension or less than min extension
+        if (result > Y_MAX_EXTENSION || result < Y_MIN_EXTENSION)
+            // Set correct distance to max/min extension
+            inches = (Y_MAX_EXTENSION - getYPosInches());
 
-            // Normalize if result is result is less than min extension
-        else if (result < Y_MIN_EXTENSION)
-            // Set correct distance to min extension
-            inches = (Y_MIN_EXTENSION - ySlide.getCurrentPosition() / Y_TICKS_PER_INCH);
+        return inches;
     }
 
     public double getXPosInches() {
@@ -801,6 +824,18 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
     public double getYPosInches() {
 
         return ySlide.getCurrentPosition() / Y_TICKS_PER_INCH;
+    }
+
+    public void resetSlideEncoders() {
+
+        xSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        ySlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public void resetSlideMode() {
+
+        xSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        ySlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void resetDriveEncoders() {
@@ -873,5 +908,180 @@ public abstract class Skystone10022Superclass extends LinearOpMode {
 
         theta = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
         return Math.toDegrees(theta.firstAngle);
+    }
+
+    public void teleOp() {
+
+        // TELEMETRY ---------------------------------------------------------------------------
+        // Display control info for the driver
+
+        telemetry.addLine("STACK AND LEVELLING: ");
+        telemetry.addLine("Y-Target, Level: " + yTargetInches + ", " + yLevel);
+        telemetry.addLine("Stack State: " + stackState);
+        telemetry.addLine();
+
+        telemetry.addLine("INTAKE: ");
+        telemetry.addLine("Intake Loaded: " + intakeIsLoaded);
+        telemetry.addLine("Intake Power: " + intakePower);
+        telemetry.addLine();
+
+        telemetry.addLine("CLAW AND HOOK:");
+        telemetry.addLine("Claw Activated: " + clawIsActivated);
+        telemetry.addLine("Hook Activated " + hookIsActivated);
+        telemetry.addLine();
+
+        telemetry.addLine("LINEAR SLIDES:");
+        telemetry.addLine("X-Slide Position: " + getXPosInches());
+        telemetry.addLine("Y-Slide Position: " + getYPosInches());
+        telemetry.addLine();
+
+        telemetry.addLine("IMU AND ENCODERS:");
+        telemetry.addLine("Global Angle: " + getHeading());
+        telemetry.addLine("FL: " + frontLeft.getCurrentPosition());
+        telemetry.addLine("FR: " + frontRight.getCurrentPosition());
+        telemetry.addLine("BL: " + backLeft.getCurrentPosition());
+        telemetry.addLine("BR: " + backRight.getCurrentPosition());
+        telemetry.addLine("X-Slide: " + xSlide.getCurrentPosition());
+        telemetry.addLine("Y-Slide: " + ySlide.getCurrentPosition());
+        telemetry.update();
+
+        // SIGNALLING ------------------------------------------------------------------------------
+
+        // DRIVETRAIN ------------------------------------------------------------------------------
+
+        double lefty = -gamepad1.left_stick_y;
+        double leftx = gamepad1.left_stick_x;
+        double rightx = gamepad1.right_stick_x;
+
+        // Joystick deadzones prevents unintentional drivetrain movements
+        if (Math.abs(lefty) <= 0.2)
+            lefty = 0;
+
+        if (Math.abs(leftx) <= 0.2)
+            leftx = 0;
+
+        if (Math.abs(rightx) <= 0.2)
+            rightx = 0;
+
+        // Motor powers are set to the power of 3 so that the drivetrain motors accelerates
+        // exponentially instead of linearly
+        flpower = Math.pow((lefty + leftx + rightx), 3);
+        blpower = Math.pow((lefty - leftx + rightx), 3);
+        frpower = Math.pow((lefty - leftx - rightx), 3);
+        brpower = Math.pow((lefty + leftx - rightx), 3);
+
+        // Motor Power is halved while the right trigger is held down to allow for more
+        // precise robot control
+        if (gamepad1.right_trigger > 0.9) {
+
+            flpower /= 5;
+            frpower /= 5;
+            blpower /= 5;
+            brpower /= 5;
+        }
+
+        else if (gamepad1.right_trigger > 0.1) {
+
+            slow = -0.8 * gamepad1.right_trigger + 1;
+
+            flpower *= slow;
+            frpower *= slow;
+            blpower *= slow;
+            brpower *= slow;
+        }
+
+        // Set Motor Powers
+        frontLeft.setPower(flpower);
+        backLeft.setPower(blpower);
+        frontRight.setPower(frpower);
+        backRight.setPower(brpower);
+
+        // ROTATE ------------------------------------------------------------------------------
+        if (gamepad1.y && y == 0)
+            y = 1;
+
+        else if (!gamepad1.y && y == 1) {
+            rotateRight(180);
+            y = 0;
+        }
+
+        // HOOK --------------------------------------------------------------------------------
+        if (gamepad1.b && b == 0)
+            b = 1;
+
+        else if (!gamepad1.b && b == 1) {
+            hookDown();
+            b = 2;
+        }
+
+        else if (gamepad1.b && b == 2)
+            b = 3;
+
+        else if (!gamepad1.b && b == 3) {
+            hookUp();
+            b = 0;
+        }
+
+        // Y SLIDES ----------------------------------------------------------------------------
+
+        // Every Dpad_Up press increases level until max level
+        // Dpad_Right press runs slides
+        if (yTargetInches < Y_MAX_EXTENSION) {
+
+            if (gamepad1.dpad_up && up == 0)
+                up = 1;
+
+            else if (!gamepad1.dpad_up && up == 1) {
+
+                // Add stone height to target
+                yTargetInches += STONE_HEIGHT;
+                yLevel++;
+
+                // If stone is level one, add platform and clearance height
+                if (yTargetInches == STONE_HEIGHT)
+                    yTargetInches += PLTFM + STACK_CLEARANCE;
+
+                up = 0;
+            }
+        }
+
+        // Every Dpad_Down press decreases level until min level
+        if (yTargetInches > -Y_MAX_EXTENSION) {
+
+            if (gamepad1.dpad_down && down == 0)
+                down = 1;
+
+            else if (!gamepad1.dpad_down && down == 1) {
+
+                yTargetInches -= STONE_HEIGHT;
+                yLevel--;
+
+                // If stone was level one, subtract platfrom and clearance height
+                if (yTargetInches == PLTFM + STACK_CLEARANCE)
+                    yTargetInches = 0;
+
+                // If stone was negative max level, subtract platform and clearance height
+                if (yTargetInches == -(STONE_HEIGHT * MAX_LEVEL))
+                    yTargetInches = -Y_MAX_EXTENSION;
+
+                down = 0;
+            }
+        }
+
+        // CLAW-INTAKE -----------------------------------------------------------------------------
+
+        if(range.getDistance(DistanceUnit.INCH) < 0.8) {
+
+            intakeIsLoaded = true;
+            intakeOff();
+            closeClaw();
+        }
+
+        else {
+
+            intakeIsLoaded = false;
+            intake();
+            openClaw();
+        }
     }
 }
