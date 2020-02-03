@@ -4,7 +4,7 @@ package org.firstinspires.ftc.teamcode.OpenCV_Test_Classes;
 import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Superclass_Dependables.Skystone10022Superclass;
+import org.firstinspires.ftc.teamcode.StatesBot.Skystone10022Superclass;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
