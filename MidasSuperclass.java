@@ -27,7 +27,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
 
     // DRIVETRAIN
     public DcMotor frontLeft, frontRight, backLeft, backRight;
-    
+
     // REV Sensors
     public BNO055IMU imu;
     public Orientation theta;
@@ -50,7 +50,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
     public ElapsedTime pidTimer;
 
     // CONTROL CONSTANTS ---------------------------------------------------------------------------
-    
+
     // GENERAL CONTROL
     public final double ON = 1;
     public final double OFF = 0;
@@ -96,7 +96,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
         telemetry.addLine("Robot Initialized");
         telemetry.update();
     }
-    
+
     // DRIVETRAIN
 
     public void forward(double pow, double inches) {
@@ -535,7 +535,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
             resetDriveMode();
         }
     }
-    
+
     // UTILITY METHODS -----------------------------------------------------------------------------
 
     public void runEncoder(DcMotor m_motor, double power, double ticks) {
@@ -556,7 +556,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
         // Turn off RUN_TO_POSITION
         m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    
+
     public void resetDriveEncoders() {
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -654,7 +654,7 @@ public abstract class MidasSuperclass extends LinearOpMode {
     }
 
     public void displayTelemetry() {
-        
+
         telemetry.addLine("IMU AND ENCODERS:");
         telemetry.addLine("Global Angle: " + theta.firstAngle);
         telemetry.addLine("FL: " + frontLeft.getCurrentPosition());
