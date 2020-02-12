@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.StatesBot.Midas;
 
+import org.firstinspires.ftc.teamcode.StatesBot.Midas.Paths.TestPath;
 import org.firstinspires.ftc.teamcode.StatesBot.PIDController;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -50,8 +51,8 @@ public abstract class MidasSuperclass extends LinearOpMode {
     public PIDController pidDiagQ2 = new PIDController(0, 0, 0);
     public PIDController pidDiagQ3 = new PIDController(0, 0, 0);
     public PIDController pidDiagQ4 = new PIDController(0, 0, 0);
-    public PIDController pidDriveVelLeft = new PIDController(0.004794,0,0);
-    public PIDController pidDriveVelRight = new PIDController(0.001,0,0);
+    public PIDController pidDriveVelLeft = new PIDController(0.004794, 0, 0);
+    public PIDController pidDriveVelRight = new PIDController(0.001, 0, 0);
     public ElapsedTime pidTimer;
 
     // CONTROL CONSTANTS ---------------------------------------------------------------------------
@@ -78,9 +79,9 @@ public abstract class MidasSuperclass extends LinearOpMode {
     public final double DRIVE_GEAR_REDUCTION = 1;   //temp
     public final double DRIVE_TICKS_PER_INCH = ((DRIVE_TICKS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / WHEEL_CIRCUMFERENCE_INCHES);   //temp
 
-    public final double ROBOT_RADIUS_INCHES  = 9.933;   //temp
-    public final double ROBOT_CIRCUMFERENCE_INCHES  = 2 * ROBOT_RADIUS_INCHES * Math.PI;    //temp
-    public final double DRIVE_INCHES_PER_DEGREE  = ((ROBOT_CIRCUMFERENCE_INCHES / 360)*(1.175/1)); // temp
+    public final double ROBOT_RADIUS_INCHES = 9.933;   //temp
+    public final double ROBOT_CIRCUMFERENCE_INCHES = 2 * ROBOT_RADIUS_INCHES * Math.PI;    //temp
+    public final double DRIVE_INCHES_PER_DEGREE = ((ROBOT_CIRCUMFERENCE_INCHES / 360) * (1.175 / 1)); // temp
     // public final double DRIVE_INCHES_PER_DEGREE = 13.75 / 180;
 
     // VELOCITY
@@ -93,6 +94,10 @@ public abstract class MidasSuperclass extends LinearOpMode {
     boolean thread_run = true;
     double rpm_gate_time = 250;
     double LRPM, RRPM, RPM;
+
+    // MoPo Paths
+    TestPath testPath = new TestPath();
+    double[][] testValues = testPath.Path;
 
     // METHODS -------------------------------------------------------------------------------------
 
@@ -132,12 +137,14 @@ public abstract class MidasSuperclass extends LinearOpMode {
     }
 
     // DRIVETRAIN (RAW)
+
     public void leftVelPIDConstants(double p, double i, double d, double f){
 
         frontLeft.setVelocityPIDFCoefficients(p, i, d, f);
         backLeft.setVelocityPIDFCoefficients(p, i, d, f);
 
     }
+
     public void rightVelPIDConstants(double p, double i, double d, double f){
 
         frontRight.setVelocityPIDFCoefficients(p, i, d, f);
@@ -695,7 +702,6 @@ public abstract class MidasSuperclass extends LinearOpMode {
         frontLeft.setPower(pow);
         backLeft.setPower(pow);
     }
-
 
     public void leftTurnPower(double pow) {
 
