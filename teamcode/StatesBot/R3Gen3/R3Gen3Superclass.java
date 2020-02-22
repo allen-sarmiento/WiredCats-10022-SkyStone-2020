@@ -58,7 +58,10 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
     public DcMotor ySlideL, ySlideR;
 
     // X-SLIDES
-    public Servo xSlide, clawGrabber, clawRotate, hookL, hookR, capper;
+    public Servo xSlide, hookL, hookR, capper;
+   
+    // CLAW
+    public Servo clawGrabber, clawRotate;
 
     // INTAKE
     public DcMotor intakeL, intakeR;
@@ -153,8 +156,8 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
         xSlide = hardwareMap.servo.get("xSlide");
 
         // CLAW
-        clawGrabber = hardwareMap.servo.get("clawGrabber");
-        clawRotate = hardwareMap.servo.get("clawRotate");
+        //clawGrabber = hardwareMap.servo.get("clawGrabber");
+        //clawRotate = hardwareMap.servo.get("clawRotate");
 
         // HOOK
         hookL = hardwareMap.servo.get("hookL");
@@ -199,7 +202,7 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
 
         targetsSkyStone.activate();
 
-        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(false);
 
         telemetry.addLine("Vuforia Initialized");
         telemetry.update();
@@ -596,7 +599,7 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
         }
     }
 
-    // BLUE SIDE QUARRY AUTO ONLY
+    // blue side vuforia
     public void vuforiaScanBlue(boolean saveBitmap) {
 
         // note: height and width are reversed
@@ -673,12 +676,15 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
             int cropWidth;
             int cropHeight;
 
+            int quarryWidth, quarryHeight;
+            quarryWidth = quarry.getWidth();
+            quarryHeight = quarry.getHeight();
+
             //cropStartX = (int)(0.3125 * quarry.getWidth());
-            cropStartX = (int) (0.35 * quarry.getWidth());   // temp
-            cropStartY = 0;
-            //cropStartY = (int) (0.1518987342 * quarry.getHeight());
-            cropWidth = (int) (0.06 * quarry.getWidth());
-            cropHeight = (int) (1.0 * quarry.getHeight());
+            cropStartX = (int) (quarryWidth * 19.5 / 16);     // x initial
+            cropStartY = (int) (quarryHeight * 14.5 / 16);    // y initial
+            cropWidth = (int) (quarryWidth * (68.5 - 19.5) / 16);      // is this delta x or x final?
+            cropHeight = (int) (quarryHeight * (21 - 14.5) / 16);      // is this delta y or y final?
 
             // Create cropped bitmap to show only stones
             quarry = createBitmap(quarry, cropStartX, cropStartY, cropWidth, cropHeight);
@@ -710,101 +716,41 @@ public abstract class R3Gen3Superclass extends LinearOpMode {
             // Compress bitmap to reduce scan time
             quarry = createScaledBitmap(quarry, 110, 20, true);
 
-            int height, width, pixel, tempColorSum;
-            int bitmapWidth = quarry.getWidth(), bitmapHeight = quarry.getHeight();
-            int colorSum = 1000;
+            int yPos, xPos, pixel, tempColorSum;
+            int bitmapWidth = quarryWidth;
+            int bitmapHeight = quarryHeight;
+            int maxColor = 1000;
+            double factor = 14.5 / 16;      // moves yPos based on which stone
+            double difference = factor / 4;              // moves yPos based on the point on the stone
 
-            // width = (int)(0.3425 * quarry.getWidth());
-            width = (int) (0.35 * quarry.getWidth());    // temp
+            xPos = (int) (bitmapHeight * 6 / 16); // temp
 
-            //stone 6
-            {
-                height = (int) (bitmapHeight * 0.2405063291);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
+            // cycles through the three stones furthest from the wall
+            for (int currentStone = 1; currentStone < 3; currentStone++) {
 
-                    colorSum = tempColorSum;
-                    skyStonePos = 6;
+                // cycles through 3 points on the stone
+                for (int i = 1; i <= 3; i++) {
+
+                    // set yPosition
+                    yPos = (int) (bitmapHeight * (factor + difference * i));
+
+                    // gets the pixel
+                    pixel = quarry.getPixel(xPos, yPos);
+
+                    // finds the color sum of that pixel
+                    tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
+
+                    // if it's the darkest pixel yet, it will set the skyStonePos to the currentStone
+                    if (tempColorSum < maxColor) {
+
+                        maxColor = tempColorSum;
+                        skyStonePos = currentStone;
+                    }
                 }
 
-                height = (int) (bitmapHeight * 0.3291139241);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
+                // updates factor so the next cycle will look at pixels on the next stone
+                factor += 13 / 16;
 
-                    colorSum = tempColorSum;
-                    skyStonePos = 6;
-                }
-
-                height = (int) (bitmapHeight * 0.417721519);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 6;
-                }
-            }
-
-            //stone 5
-            {
-                height = (int) (bitmapHeight * 0.58544303795);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 5;
-                }
-
-                height = (int) (bitmapHeight * 0.664556962);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 5;
-                }
-
-                height = (int) (bitmapHeight * 0.74367088605);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 5;
-                }
-            }
-
-            //stone 4
-            {
-                height = (int) (bitmapHeight * 0.867088607575);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 4;
-                }
-
-                height = (int) (bitmapHeight * 0.91139240505);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 4;
-                }
-
-                height = (int) (bitmapHeight * 0.955696202525);
-                pixel = quarry.getPixel(width, height);
-                tempColorSum = Color.red(pixel) + Color.green(pixel) + Color.blue(pixel);
-                if (tempColorSum < colorSum) {
-
-                    colorSum = tempColorSum;
-                    skyStonePos = 4;
-                }
             }
 
             telemetry.addLine("Position: " + skyStonePos);
